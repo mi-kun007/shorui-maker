@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>営業報告書 {{date_iso}}</title>
+<style>
+@page{size:A4;margin:0}
+body{margin:0;background:#fff;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic","游ゴシック",Meiryo,sans-serif;color:#111}
+.sheet{width:210mm;box-sizing:border-box;padding:15mm 18mm 12mm;font-size:12px;line-height:1.6}
+.title{font-size:22px;letter-spacing:.35em;text-align:center;margin:0 0 6mm;font-weight:600}
+.head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:3mm;margin-bottom:6mm}
+.head .date{font-size:15px}
+.head .who{text-align:right;font-size:11.5px;line-height:1.8}
+.who b{font-size:13.5px}
+h2{font-size:13px;margin:4.5mm 0 1.5mm;padding-left:3mm;border-left:4px solid #111}
+table{width:100%;border-collapse:collapse;font-size:11.5px}
+th,td{border:1px solid #999;padding:1.6mm 2.2mm;text-align:left;vertical-align:top}
+th{background:#f2f2f2;font-weight:600;white-space:nowrap}
+td.num{text-align:right;white-space:nowrap}
+td .nx{color:#1c3f7a}
+td .src{color:#888;font-size:9.5px;margin-top:.6mm}
+td .nx b{font-weight:600}
+.memo{border:1px solid #999;min-height:20mm;padding:2mm 3mm;white-space:pre-wrap}
+.empty{color:#888}
+.warn{color:#a40000}
+.foot{margin-top:6mm;font-size:10px;color:#666;display:flex;justify-content:space-between}
+</style></head><body><div class="sheet">
+<div class="title">営業報告書</div>
+<div class="head">
+  <div class="date">{{date_ja}}</div>
+  <div class="who"><b>{{company}}</b><br>{{author_line}}<br>拠点：{{base_label}}</div>
+</div>
+
+<h2>面談・訪問</h2>
+<table>
+<tr><th style="width:24mm">時刻</th><th style="width:38mm">件名</th><th style="width:30mm">場所</th><th style="width:15mm">区分</th><th>話したこと／次にやること</th></tr>
+{{{event_rows}}}
+</table>
+
+<h2>移動</h2>
+<table>
+<tr><th>区間</th><th style="width:20mm">手段</th><th style="width:24mm">運賃</th><th>根拠</th></tr>
+{{{leg_rows}}}
+</table>
+{{{leg_total}}}
+
+<h2>所感</h2>
+<div class="memo{{memo_class}}">{{memo}}</div>
+
+<h2>明日の予定</h2>
+<table>
+<tr><th style="width:26mm">時刻</th><th>件名</th><th style="width:34mm">場所</th></tr>
+{{{tomorrow_rows}}}
+</table>
+{{{warnings_block}}}
+<div class="foot"><span>作成：書類メーカー（カレンダーから自動生成）</span><span>{{generated_at}} 生成</span></div>
+</div></body></html>

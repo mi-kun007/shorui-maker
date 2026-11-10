@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.pytest_cache/
+dist/
+build/
+*.pdf
+*.log
+# ユーザーデータ・秘密は絶対に入れない
+profile.json
+profiles.local.json
+secrets.env
+key.js
+.env
+*.local.json
+out/

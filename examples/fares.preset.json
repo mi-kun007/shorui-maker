@@ -1,0 +1,314 @@
+{
+  "_note": "はじめから入っている運賃。主要な駅どうしの分だけです。自分の使う区間は道順6で足してください。運賃は改定で変わります。実費が出たらそちらで上書きを。",
+  "checkedAt": "2026-08-21",
+  "fares": [
+    {
+      "from": "三ノ宮",
+      "to": "新大阪",
+      "amount": 580,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "上野",
+      "to": "東京",
+      "amount": 199,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "京都",
+      "to": "新大阪",
+      "amount": 1450,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "京都",
+      "to": "東京",
+      "amount": 13320,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "仙台",
+      "to": "東京",
+      "amount": 10780,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "博多",
+      "to": "天神",
+      "amount": 210,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "原宿",
+      "to": "渋谷",
+      "amount": 155,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "名古屋",
+      "to": "新大阪",
+      "amount": 5940,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "名古屋",
+      "to": "東京",
+      "amount": 10560,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "品川",
+      "to": "東京",
+      "amount": 209,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "品川",
+      "to": "横浜",
+      "amount": 341,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "天神",
+      "to": "博多",
+      "amount": 210,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "小田原",
+      "to": "東京",
+      "amount": 1595,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新大阪",
+      "to": "三ノ宮",
+      "amount": 580,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新大阪",
+      "to": "京都",
+      "amount": 1450,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新大阪",
+      "to": "名古屋",
+      "amount": 5940,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新大阪",
+      "to": "東京",
+      "amount": 13870,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新宿",
+      "to": "東京",
+      "amount": 253,
+      "transport": "鉄道",
+      "source": "交通系ICの利用履歴（? 〜 2024-06-02・5回一致）"
+    },
+    {
+      "from": "新宿",
+      "to": "横浜",
+      "amount": 595,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新宿",
+      "to": "池袋",
+      "amount": 199,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新宿",
+      "to": "渋谷",
+      "amount": 199,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "新横浜",
+      "to": "東京",
+      "amount": 1380,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "上野",
+      "amount": 199,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "京都",
+      "amount": 13320,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "仙台",
+      "amount": 10780,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "名古屋",
+      "amount": 10560,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "品川",
+      "amount": 209,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "小田原",
+      "amount": 1595,
+      "transport": "鉄道",
+      "source": "利用者登録"
+    },
+    {
+      "from": "東京",
+      "to": "新大阪",
+      "amount": 13870,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "新宿",
+      "amount": 253,
+      "transport": "鉄道",
+      "source": "交通系ICの利用履歴（2023-06-16 〜 2024-06-07・3回一致）"
+    },
+    {
+      "from": "東京",
+      "to": "新横浜",
+      "amount": 1380,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "横浜",
+      "amount": 528,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "池袋",
+      "amount": 209,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "東京",
+      "to": "渋谷",
+      "amount": 253,
+      "transport": "鉄道",
+      "source": "交通系ICの利用履歴（? 〜 2024-06-01・4回一致）"
+    },
+    {
+      "from": "東京",
+      "to": "金沢",
+      "amount": 14070,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "横浜",
+      "to": "品川",
+      "amount": 341,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "横浜",
+      "to": "新宿",
+      "amount": 595,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "横浜",
+      "to": "東京",
+      "amount": 528,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "池袋",
+      "to": "新宿",
+      "amount": 199,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "池袋",
+      "to": "東京",
+      "amount": 209,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "渋谷",
+      "to": "原宿",
+      "amount": 155,
+      "transport": "鉄道",
+      "source": "交通系ICの利用履歴（? 〜 2024-06-01・3回一致）"
+    },
+    {
+      "from": "渋谷",
+      "to": "新宿",
+      "amount": 199,
+      "transport": "鉄道",
+      "source": ""
+    },
+    {
+      "from": "渋谷",
+      "to": "東京",
+      "amount": 253,
+      "transport": "鉄道",
+      "source": "交通系ICの利用履歴（? 〜 2024-06-08・3回一致）"
+    },
+    {
+      "from": "金沢",
+      "to": "東京",
+      "amount": 14070,
+      "transport": "鉄道",
+      "source": "経路検索 2026-08-21"
+    }
+  ]
+}

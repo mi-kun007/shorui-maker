@@ -1,0 +1,20 @@
+{
+  "_note": "日程調整の見本。demo が true の間は通信せず、下の見本の予約を出す。本番は endpoint を自分の Worker にして demo を外す",
+  "demo": true,
+  "endpoint": "https://example.com",
+  "calendar": "仕事",
+  "links": [
+    {"token": "m30-sample", "title": "オンライン打ち合わせ（30分）", "host": "山田 太郎", "minutes": 30,
+     "days": [1, 2, 3, 4, 5], "holidays": false, "start": "10:00", "end": "18:00", "stepMinutes": 30,
+     "buffer": 15, "noticeHours": 12, "horizonDays": 21, "zoom": "https://example.com/meeting"},
+    {"token": "m60-sample", "title": "オンライン打ち合わせ（60分）", "host": "山田 太郎", "minutes": 60,
+     "days": [1, 2, 3, 4, 5], "holidays": false, "start": "10:00", "end": "18:00", "stepMinutes": 30,
+     "buffer": 15, "noticeHours": 12, "horizonDays": 21, "zoom": "https://example.com/meeting"}
+  ],
+  "demoBookings": [
+    {"inDays": 1, "at": "14:00", "minutes": 30, "name": "佐藤 花子", "title": "オンライン打ち合わせ（30分）",
+     "email": "hanako@example.com", "memo": "見積の相談です"},
+    {"inDays": 3, "at": "11:00", "minutes": 60, "name": "鈴木 一郎", "title": "オンライン打ち合わせ（60分）",
+     "email": "", "memo": ""}
+  ]
+}

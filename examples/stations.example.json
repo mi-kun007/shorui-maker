@@ -1,0 +1,9 @@
+{
+  "_note": "駅の台帳。id は英数字。fares.json の from/to はこの id を使う。",
+  "stations": {
+    "tokyo":    {"name": "東京駅", "kind": "rail", "pref": "東京都"},
+    "shinjuku": {"name": "新宿駅", "kind": "rail", "pref": "東京都"},
+    "shibuya":  {"name": "渋谷駅", "kind": "rail", "pref": "東京都"},
+    "yokohama": {"name": "横浜駅", "kind": "rail", "pref": "神奈川県"}
+  }
+}

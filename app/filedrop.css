@@ -1,0 +1,13 @@
+/* ファイルの取り込み口。色は --fd-accent で画面に合わせる */
+.fd{--fd-accent:var(--accent,#0b7fc7);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:210px;padding:24px 16px;box-sizing:border-box;width:100%;border:2px dashed color-mix(in srgb,var(--fd-accent) 45%,transparent);border-radius:14px;background:rgba(255,255,255,.55);color:inherit;text-align:center;cursor:pointer;transition:background .15s,border-color .15s}
+.fd:hover,.fd:focus-visible{background:rgba(255,255,255,.85);border-color:var(--fd-accent);outline:0}
+.fd.fd-over{background:color-mix(in srgb,var(--fd-accent) 14%,#fff);border-color:var(--fd-accent);border-style:solid}
+.fd.fd-off{opacity:.5;cursor:default}
+.fd-icon{color:var(--fd-accent);margin-bottom:4px}
+.fd-big{font-size:16px;font-weight:600}
+.fd-or{font-size:13px;opacity:.7}
+.fd-pick{margin:2px 0 6px;padding:8px 20px;border-radius:8px;background:var(--fd-accent);color:#fff;font-weight:600;font-size:14px}
+.fd-note{font-size:13px;opacity:.7}
+.fd-name{font-size:13px;color:var(--fd-accent);overflow-wrap:anywhere}
+.fd-small{min-height:0;padding:12px;gap:3px}.fd-small .fd-icon{width:24px;height:24px;margin:0}.fd-small .fd-big{font-size:13px}.fd-small .fd-or,.fd-small .fd-note{display:none}.fd-small .fd-pick{margin:0;padding:4px 12px;font-size:12px}
+@media (prefers-color-scheme:dark){.fd{background:rgba(255,255,255,.04)}.fd:hover,.fd:focus-visible{background:rgba(255,255,255,.08)}.fd.fd-over{background:color-mix(in srgb,var(--fd-accent) 22%,transparent)}}

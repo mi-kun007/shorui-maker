@@ -1,0 +1,8 @@
+{
+  "_note": "区間ごとの実額。推測で埋めない。amount は片道・大人・通常期。verified が true の行だけ書類に使う。",
+  "fares": [
+    {"id": "tokyo_shinjuku", "from": "tokyo", "to": "shinjuku", "transport": "鉄道", "line": "JR中央線", "amount": 210, "verified": true, "source": "見本（実額に直すこと）", "checkedAt": "2026-08-19"},
+    {"id": "tokyo_shibuya",  "from": "tokyo", "to": "shibuya",  "transport": "鉄道", "line": "JR山手線", "amount": 210, "verified": true, "source": "見本（実額に直すこと）", "checkedAt": "2026-08-19"},
+    {"id": "tokyo_yokohama", "from": "tokyo", "to": "yokohama", "transport": "鉄道", "line": "JR東海道線", "amount": null, "verified": false, "source": "", "checkedAt": ""}
+  ]
+}

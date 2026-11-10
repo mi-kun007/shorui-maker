@@ -1,0 +1,2224 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>書類メーカー</title>
+<style>
+  :root {
+    --ink: #1a2233;
+    --sub: #5a6478;
+    --line: #d8dee9;
+    --accent: #1f4e8c;
+    --accent-soft: #eef3fa;
+    --bg: #eceff4;
+    --danger: #c0392b;
+    --seal-red: #d33a2c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Yu Gothic", "游ゴシック", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    background: var(--bg); color: var(--ink); font-size: 14px;
+  }
+
+  /* ===== ヘッダー ===== */
+  header {
+    position: sticky; top: 0; z-index: 100;
+    background: #fff; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 16px; padding: 10px 20px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 16px; letter-spacing: 0.08em; color: var(--accent); white-space: nowrap; }
+  header h1 small { color: var(--sub); font-weight: normal; font-size: 11px; margin-left: 6px; }
+  .tabs { display: flex; gap: 4px; }
+  .tabs button {
+    appearance: none; border: 1px solid var(--line); background: #fff; cursor: pointer;
+    padding: 8px 18px; border-radius: 8px; font: inherit; font-size: 14px; color: var(--sub);
+  }
+  .tabs button.active { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: bold; }
+  .issuer-switch { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+  .issuer-switch label { font-size: 12px; color: var(--sub); }
+  .issuer-switch select { padding: 7px 10px; border: 1px solid var(--line); border-radius: 8px; font: inherit; }
+  .hbtns { display: flex; gap: 6px; }
+  .hbtns button {
+    appearance: none; border: 1px solid var(--line); background: #fff; cursor: pointer;
+    padding: 8px 14px; border-radius: 8px; font: inherit; font-size: 13px;
+  }
+  .hbtns button:hover { background: var(--accent-soft); }
+  .hbtns button.print { background: var(--accent); color: #fff; border-color: var(--accent); font-weight: bold; }
+  .hbtns button:disabled { opacity: .45; cursor: not-allowed; background: #f4f5f7; }
+
+  /* ===== レイアウト ===== */
+  main { display: flex; gap: 20px; padding: 20px; align-items: flex-start; }
+  aside {
+    width: 520px; flex-shrink: 0; background: #fff; border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px; max-height: calc(100vh - 100px); overflow-y: auto;
+    position: sticky; top: 76px;
+  }
+  aside h2 { font-size: 13px; color: var(--accent); border-left: 4px solid var(--accent); padding-left: 8px; margin: 18px 0 10px; }
+  aside h2:first-child { margin-top: 0; }
+  .frow { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+  .frow label { width: 84px; flex-shrink: 0; font-size: 12px; color: var(--sub); }
+  .frow input[type="text"], .frow input[type="date"], .frow input[type="number"], .frow select, .frow textarea {
+    flex: 1; padding: 7px 9px; border: 1px solid var(--line); border-radius: 6px; font: inherit; min-width: 0;
+  }
+  .frow textarea { resize: vertical; min-height: 56px; }
+  .frow .mini { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--sub); }
+  .chkrow { display: flex; align-items: center; gap: 6px; margin: 6px 0; font-size: 13px; }
+  .items-table { width: 100%; border-collapse: collapse; margin-bottom: 6px; }
+  .items-table th { font-size: 11px; color: var(--sub); text-align: left; padding: 2px 4px; }
+  .items-table td { padding: 2px 2px; }
+  .items-table input, .items-table select { width: 100%; padding: 6px 6px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 13px; }
+  .items-table .del { appearance: none; border: 0; background: none; color: var(--danger); cursor: pointer; font-size: 15px; padding: 4px; }
+  .addrow { appearance: none; border: 1px dashed var(--accent); color: var(--accent); background: none; cursor: pointer; width: 100%; padding: 7px; border-radius: 8px; font: inherit; font-size: 13px; }
+  .numbtn { appearance: none; border: 1px solid var(--line); background: var(--accent-soft); cursor: pointer; padding: 7px 10px; border-radius: 6px; font: inherit; font-size: 12px; white-space: nowrap; }
+  .hint { font-size: 11px; color: var(--sub); line-height: 1.5; margin: 4px 0 8px; }
+  .travel-quick { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; margin-bottom: 10px; }
+  .travel-quick button { appearance: none; border: 1px solid var(--line); background: var(--accent-soft); color: var(--accent); cursor: pointer; padding: 8px 6px; border-radius: 6px; font: inherit; font-size: 12px; font-weight: bold; }
+  .travel-expense-card { border: 1px solid var(--line); border-radius: 8px; padding: 9px; margin-bottom: 8px; background: #fbfcfe; }
+  .travel-expense-head { display: grid; grid-template-columns: 1fr 96px 28px; gap: 6px; margin-bottom: 6px; }
+  .travel-expense-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .travel-expense-card input, .travel-expense-card select { width: 100%; min-width: 0; padding: 6px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; }
+  .travel-expense-card .wide { grid-column: 1 / -1; }
+  .travel-check { border: 1px solid #bfd0e5; background: var(--accent-soft); padding: 9px 10px; border-radius: 8px; margin: 8px 0; font-size: 11px; line-height: 1.55; }
+  .travel-check.warn { border-color: #e2af7e; background: #fff5e9; color: #764719; }
+
+  /* ===== AIチャット ===== */
+  #chat-panel { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 14px; background: #f8fafd; overflow: hidden; }
+  .chat-head { font-size: 12px; font-weight: bold; color: var(--accent); padding: 8px 10px; border-bottom: 1px solid var(--line); background: #fff; display: flex; justify-content: space-between; align-items: center; }
+  .chat-head .chat-model { color: var(--sub); font-weight: normal; font-size: 10px; }
+  .chat-log { max-height: 300px; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+  .msg { font-size: 12.5px; line-height: 1.6; padding: 7px 10px; border-radius: 10px; max-width: 92%; white-space: pre-wrap; }
+  .msg.user { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 2px; }
+  .msg.ai { align-self: flex-start; background: #fff; border: 1px solid var(--line); border-bottom-left-radius: 2px; }
+  .msg.ai.err { color: var(--danger); }
+  .msg.ai.wait { color: var(--sub); font-style: italic; }
+  .chat-input-row { display: flex; gap: 6px; padding: 8px; border-top: 1px solid var(--line); background: #fff; }
+  .chat-input-row { align-items: flex-end; }
+  .chat-input-row textarea { flex: 1; min-height: 132px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; font: inherit; font-size: 13px; line-height: 1.7; resize: vertical; }
+  .chat-input-row button { align-self: stretch; }
+  #chat-panel { border: 2px solid var(--accent); }
+  .chat-hint { font-size: 11px; color: var(--sub); padding: 0 10px 8px; line-height: 1.7; }
+  .chat-hint b { color: var(--accent); }
+  .chat-input-row button { appearance: none; border: 0; background: var(--accent); color: #fff; border-radius: 8px; padding: 0 16px; font: inherit; font-weight: bold; cursor: pointer; }
+  .chat-input-row button:disabled { opacity: .5; cursor: default; }
+  #chat-mic, #chat-attach { background: #fff; border: 1px solid var(--line); padding: 0 12px; font-size: 16px; }
+  .chat-files { display: none; flex-wrap: wrap; gap: 6px; padding: 6px 8px 0; background: #fff; border-top: 1px solid var(--line); }
+  .fchip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; background: var(--accent-soft); color: var(--accent); border: 1px solid var(--line); border-radius: 999px; padding: 3px 8px; max-width: 100%; overflow: hidden; }
+  .fchip button { appearance: none; border: 0; background: none; cursor: pointer; color: var(--danger); font-size: 11px; padding: 0 2px; }
+  #chat-mic.rec { background: var(--danger); border-color: var(--danger); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.55; } }
+
+  /* ===== プレビュー（A4） ===== */
+  #preview-wrap { flex: 1; display: flex; justify-content: center; }
+  .sheet {
+    background: #fff; width: 210mm; min-height: 297mm; padding: 18mm 16mm;
+    box-shadow: 0 10px 30px rgba(20,40,80,0.15); border-radius: 2px;
+    font-size: 13px; line-height: 1.7; color: #111;
+    font-family: "Yu Gothic", "游ゴシック", Meiryo, sans-serif;
+  }
+  .sheet .doc-title {
+    text-align: center; font-size: 26px; letter-spacing: 0.5em; text-indent: 0.5em;
+    font-weight: bold; margin-bottom: 8mm; border-bottom: 3px double #111; padding-bottom: 3mm;
+  }
+  .sheet .meta-right { text-align: right; font-size: 12px; margin-bottom: 4mm; line-height: 1.9; }
+  .sheet .head-flex { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6mm; gap: 10mm; }
+  .sheet .client-block { flex: 1; }
+  .sheet .client-name { font-size: 18px; border-bottom: 1px solid #111; padding: 0 4px 2px; display: inline-block; min-width: 70mm; }
+  .sheet .client-addr { font-size: 11px; color: #333; margin-top: 2mm; white-space: pre-wrap; }
+  .sheet .issuer-block { width: 66mm; font-size: 11.5px; line-height: 1.8; position: relative; }
+  .sheet .issuer-block .iname { font-size: 14px; font-weight: bold; }
+  /* ロゴは判子とぶつからないよう、判子の幅ぶんを空けて左に置く */
+  .sheet .issuer-block .ilogo { margin: 0 0 1.5mm; padding-right: 20mm; }
+  .sheet .seal {
+    position: absolute; right: 0; top: 2mm; color: var(--seal-red); opacity: 0.85;
+    display: grid; place-items: center; font-weight: bold; pointer-events: none;
+  }
+  .sheet .seal.square {
+    width: 17mm; height: 17mm; border: 2.5px solid var(--seal-red);
+    writing-mode: vertical-rl; font-size: 11px; letter-spacing: 0.1em; line-height: 1.1; padding: 1mm;
+  }
+  .sheet .seal.round {
+    width: 14mm; height: 14mm; border: 2.5px solid var(--seal-red); border-radius: 50%; font-size: 14px;
+  }
+  /* 実物の判子を撮って登録した場合。枠も文字も出さず、画像だけ置く */
+  .sheet .seal.image { border: none; background: none; padding: 0; }
+  .sheet .seal.image img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+  .sheet .greeting { font-size: 12px; margin-bottom: 4mm; }
+  .sheet .total-box {
+    display: flex; align-items: center; gap: 8mm; margin-bottom: 6mm;
+    border: 2px solid #111; padding: 3mm 6mm; width: fit-content; min-width: 110mm;
+  }
+  .sheet .total-box .lbl { font-size: 14px; font-weight: bold; }
+  .sheet .total-box .amt { font-size: 24px; font-weight: bold; letter-spacing: 0.05em; }
+  .sheet .total-box .taxnote { font-size: 11px; color: #333; }
+  .sheet table.detail { width: 100%; border-collapse: collapse; margin-bottom: 4mm; }
+  .sheet table.detail th {
+    background: #f0f3f8; border: 1px solid #888; padding: 2mm; font-size: 12px; font-weight: bold;
+  }
+  .sheet table.detail td { border: 1px solid #888; padding: 2mm; font-size: 12.5px; }
+  .sheet table.detail td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .sheet table.detail td.ctr { text-align: center; }
+  .sheet .sums { width: 80mm; margin-left: auto; border-collapse: collapse; margin-bottom: 5mm; }
+  .sheet .sums td { border: 1px solid #888; padding: 1.6mm 2.5mm; font-size: 12.5px; }
+  .sheet .sums td:first-child { background: #f0f3f8; width: 44%; }
+  .sheet .sums td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+  .sheet .sums tr.grand td { font-weight: bold; font-size: 14px; }
+  .sheet .bank-box, .sheet .notes-box { border: 1px solid #888; padding: 3mm; margin-bottom: 4mm; font-size: 12px; min-height: 16mm; }
+  .sheet .box-lbl { font-weight: bold; font-size: 11px; background: #f0f3f8; display: inline-block; padding: 0.5mm 2mm; margin-bottom: 1.5mm; border: 1px solid #aaa; }
+  .sheet .pre { white-space: pre-wrap; }
+
+  /* 領収書専用 */
+  .sheet .ryo-amount {
+    display: flex; align-items: baseline; justify-content: center; gap: 6mm;
+    border-bottom: 3px double #111; margin: 8mm 10mm 6mm; padding-bottom: 2mm;
+  }
+  .sheet .ryo-amount .amt { font-size: 34px; font-weight: bold; letter-spacing: 0.05em; }
+  .sheet .ryo-tadashi { margin: 0 10mm 8mm; font-size: 13px; border-bottom: 1px solid #333; padding: 1mm 2mm; }
+  .sheet .stamp-box {
+    width: 22mm; height: 26mm; border: 1px dashed #888; display: grid; place-items: center;
+    font-size: 10px; color: #666; text-align: center; line-height: 1.5;
+  }
+  .sheet .ryo-foot { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 10mm; }
+
+  /* 契約書専用 */
+  .sheet.contract { font-size: 12px; line-height: 1.9; }
+  .sheet.travel { font-size: 11.5px; line-height: 1.55; padding: 13mm 12mm; }
+  .sheet .travel-title { display: flex; align-items: flex-end; justify-content: space-between; gap: 8mm; border-bottom: 3px solid #1f4e8c; padding-bottom: 3mm; margin-bottom: 5mm; }
+  .sheet .travel-title h2 { font-size: 22px; letter-spacing: 0.08em; }
+  .sheet .travel-title span { font-size: 10.5px; color: #555; }
+  .sheet .travel-grid { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid #8d98aa; border-left: 1px solid #8d98aa; margin-bottom: 4mm; }
+  .sheet .travel-cell { min-height: 13mm; padding: 2mm; border-right: 1px solid #8d98aa; border-bottom: 1px solid #8d98aa; }
+  .sheet .travel-cell.w2 { grid-column: span 2; }
+  .sheet .travel-cell.w4 { grid-column: 1 / -1; }
+  .sheet .travel-cell .tl { display: block; color: #4f5c70; font-size: 9px; font-weight: bold; margin-bottom: 1mm; }
+  .sheet .travel-section { margin-top: 4mm; break-inside: avoid; }
+  .sheet .travel-section h3 { color: #1f4e8c; font-size: 12px; border-bottom: 1px solid #9aa8bb; padding-bottom: 1mm; margin-bottom: 2mm; }
+  .sheet .travel-report-box { min-height: 18mm; white-space: pre-wrap; border: 1px solid #aab3c1; padding: 2.5mm; }
+  .sheet table.travel-detail { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .sheet table.travel-detail th, .sheet table.travel-detail td { border: 1px solid #9ba6b5; padding: 1.2mm; font-size: 9px; vertical-align: top; overflow-wrap: anywhere; }
+  .sheet table.travel-detail th { background: #eef3fa; }
+  .sheet table.travel-detail td.num { text-align: right; white-space: nowrap; }
+  .sheet .travel-summary { display: grid; grid-template-columns: repeat(4,1fr); border: 1px solid #8d98aa; margin-top: 3mm; }
+  .sheet .travel-summary > div { padding: 2mm; border-right: 1px solid #8d98aa; }
+  .sheet .travel-summary > div:last-child { border-right: 0; }
+  .sheet .travel-summary b { display: block; color: #4f5c70; font-size: 9px; margin-bottom: 1mm; }
+  .sheet .c-body { white-space: normal; }
+  .sheet .c-body h3 { font-size: 12.5px; margin: 4mm 0 1mm; }
+  .sheet .c-body p { margin-bottom: 1.5mm; text-align: justify; }
+  .sheet .sign-area { display: flex; gap: 10mm; margin-top: 10mm; }
+  .sheet .sign-area > div { flex: 1; border-top: 1px solid #333; padding-top: 3mm; font-size: 12px; line-height: 2; }
+
+  /* ===== モーダル ===== */
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(10,20,40,0.45); z-index: 200;
+    display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto;
+  }
+  .modal-back.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 14px; padding: 22px; width: 560px; max-width: 100%;
+  }
+  .modal h2 { font-size: 15px; color: var(--accent); margin-bottom: 14px; }
+  .modal .close-x { float: right; appearance: none; border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--sub); }
+  .modal .frow label { width: 110px; }
+  .modal .tab2 { display: flex; gap: 6px; margin-bottom: 12px; }
+  .modal .tab2 button { flex: 1; padding: 8px; border: 1px solid var(--line); background: #fff; border-radius: 8px; cursor: pointer; font: inherit; }
+  .modal .tab2 button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .modal .save-btn { width: 100%; padding: 10px; background: var(--accent); color: #fff; border: 0; border-radius: 8px; font: inherit; font-weight: bold; cursor: pointer; margin-top: 10px; }
+  .tabs button.tab-extra { border-color: #c7b7e0; }
+  .tabs button.tab-extra.active { background: #7b5ea7; border-color: #7b5ea7; color: #fff; }
+  #recurring-modal .modal { max-width: 860px; }
+  .rc-card { border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #fff; }
+  .rc-card.off { opacity: .55; }
+  .rc-head { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .rc-head .rc-name { font-weight: bold; flex: 1; }
+  .rc-grid { display: grid; grid-template-columns: 96px 1fr 96px 1fr; gap: 6px 8px; align-items: center; font-size: 13px; }
+  .rc-grid label { color: #5a6b80; }
+  .rc-grid input, .rc-grid select { width: 100%; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 13px; }
+  .rc-grid .wide { grid-column: 2 / 5; }
+  .rc-next { font-size: 12px; color: #5a6b80; margin-top: 8px; }
+  .rc-del { border: 0; background: none; color: #a33; cursor: pointer; font-size: 12px; }
+  .rc-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+  .rc-cwbar { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; margin-bottom: 12px; font-size: 12px; color: #5a6b80; }
+  .rc-cwrow { display: flex; gap: 6px; margin-top: 6px; }
+  .rc-cwrow input { flex: 1; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 12px; }
+  .rc-cwrow button { padding: 5px 12px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font: inherit; cursor: pointer; }
+  .rc-item { display: grid; grid-template-columns: 1fr 56px 56px 96px 24px; gap: 4px; margin-bottom: 4px; }
+  .rc-additem { border: 0; background: none; color: var(--accent); cursor: pointer; font-size: 12px; padding: 0; }
+  .rc-chk { display: flex; align-items: center; gap: 5px; color: #5a6b80; font-size: 12px; }
+  .rc-chk input { width: auto; }
+  .rc-grid textarea { width: 100%; padding: 5px 7px; border: 1px solid var(--line); border-radius: 6px; font: inherit; font-size: 13px; resize: vertical; }
+  .rc-run { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 3px 10px; font: inherit; font-size: 12px; cursor: pointer; }
+  .rc-bar button { padding: 7px 12px; border: 1px solid var(--line); border-radius: 8px; background: #fff; font: inherit; cursor: pointer; }
+  .mail-note { border: 1px solid #bfd0e5; background: var(--accent-soft); color: #344760; border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; font-size: 12px; line-height: 1.55; }
+  #mail-body { min-height: 220px; line-height: 1.65; }
+  .hist-item { display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; margin-bottom: 8px; }
+  .hist-item .hi-main { flex: 1; }
+  .hist-item .hi-title { font-size: 13px; font-weight: bold; }
+  .hist-item .hi-sub { font-size: 11px; color: var(--sub); }
+  .hist-item button { appearance: none; border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 6px 10px; cursor: pointer; font: inherit; font-size: 12px; }
+  .hist-item button.load { background: var(--accent-soft); color: var(--accent); }
+  .hist-item button.del { color: var(--danger); }
+
+  /* ===== 編集モード（web-edit-mode 準拠） ===== */
+  .edit-bar {
+    position: fixed; bottom: 18px; right: 18px; z-index: 9999;
+    display: flex; gap: 8px; background: #fff; border: 1px solid #E5EAF3;
+    border-radius: 999px; padding: 6px; box-shadow: 0 8px 24px rgba(0,30,80,0.10);
+    font-size: 11px; letter-spacing: 0.1em;
+  }
+  .edit-bar button {
+    appearance: none; border: 0; cursor: pointer; padding: 8px 14px; border-radius: 999px;
+    background: transparent; color: #4A5364; font: inherit;
+  }
+  .edit-bar button:hover { background: #F1F4FA; color: #0E1118; }
+  .edit-bar button.primary { background: #0E1118; color: #fff; }
+  .edit-bar button.primary.active { background: #00A6E0; }
+  .edit-bar .badge { align-self: center; padding: 0 10px 0 14px; color: #6E7787; font-size: 10px; }
+  .edit-bar .saved { align-self: center; color: #1FC79A; font-size: 10px; opacity: 0; transition: opacity .3s; padding: 0 8px; }
+  .edit-bar .saved.show { opacity: 1; }
+  body.editing [data-edit], body.editing [data-bind] {
+    outline: 2px dashed #00A6E0; outline-offset: 3px; border-radius: 3px; cursor: text;
+    background: rgba(0,166,224,0.05); min-height: 1.2em;
+  }
+  body.editing [data-edit]:hover, body.editing [data-bind]:hover { outline-color: #FF7A3A; background: rgba(255,122,58,0.07); }
+  body.editing [data-edit]:focus, body.editing [data-bind]:focus {
+    outline: 2px solid #0E1118; background: #fff; z-index: 5;
+  }
+  body.editing [data-resize] { resize: both; overflow: auto; outline: 2px dashed #1FC79A; outline-offset: 3px; min-height: 16mm; }
+  .font-ctrl {
+    position: absolute; z-index: 9998; display: none; align-items: center;
+    background: #0E1118; border-radius: 999px; padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  body.editing .font-ctrl.show { display: inline-flex; }
+  .font-ctrl button {
+    appearance: none; border: 0; cursor: pointer; background: transparent; color: #fff;
+    width: 32px; height: 28px; border-radius: 999px; font-weight: 600; font-size: 13px;
+    display: grid; place-items: center;
+  }
+  .font-ctrl button:hover { background: #00A6E0; }
+  .font-ctrl .size { color: #F5F7FB; font-size: 11px; padding: 0 10px; min-width: 44px; text-align: center; }
+
+  /* ===== 印刷 ===== */
+  @media print {
+    @page { size: A4; margin: 0; }
+    body { background: #fff; }
+    header, aside, .edit-bar, .font-ctrl, .modal-back { display: none !important; }
+    main { padding: 0; display: block; }
+    #preview-wrap { display: block; }
+    .sheet { box-shadow: none; border-radius: 0; width: auto; min-height: auto; }
+    body.editing [data-edit], body.editing [data-bind], body.editing [data-resize] { outline: none !important; background: none !important; }
+  }
+</style>
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="stylesheet" href="filedrop.css">
+</head>
+<body>
+
+<header>
+  <h1>書類メーカー<small>見積・請求・領収・契約・出張</small></h1>
+  <div class="tabs" id="tabs">
+    <button data-type="estimate">見積書</button>
+    <button data-type="invoice">請求書</button>
+    <button data-type="receipt">領収書</button>
+    <button data-type="contract">契約書</button>
+    <button data-type="travel">出張報告</button>
+    <button id="tab-recurring" class="tab-extra" title="毎月の定期請求先を見る・直す">🔁 定期送付</button>
+  </div>
+  <div class="issuer-switch">
+    <label>発行名義</label>
+    <select id="issuer-select">
+      <option value="corp">会社名義</option>
+      <option value="personal">個人名義</option>
+    </select>
+  </div>
+  <div class="hbtns">
+    <button id="btn-new">＋ 新規</button>
+    <button id="btn-history">履歴</button>
+    <button id="btn-settings">⚙ 設定</button>
+    <button id="btn-savepdf" class="print">📁 PDFで保存</button>
+    <button id="btn-gmail">Gmail下書き</button>
+    <button id="btn-print">🖨 印刷</button>
+  </div>
+</header>
+
+<main>
+  <aside id="form-panel">
+    <div id="chat-panel">
+      <div class="chat-head">🤖 ここに書いて頼む<span class="chat-model">Gemini</span></div>
+      <div class="chat-log" id="chat-log">
+        <div class="msg ai">お客さんの情報をそのまま貼って、最後に何を作るか書いてください。名刺やメールの文面をそのまま貼っても構いません。</div>
+      </div>
+      <div class="chat-hint">
+        書き方の例<br>
+        　株式会社○○／担当 ○○様／東京都…／03-0000-0000<br>
+        　ホームページ制作 40万円、着手金は半分<br>
+        　<b>この内容で契約書と請求書を作って</b><br>
+        名刺の写真やメールの文面を 📎 で足しても読みます。
+      </div>
+      <div class="chat-files" id="chat-files"></div>
+      <div class="chat-input-row">
+        <button id="chat-attach" title="ファイル添付（画像・PDF・テキスト）">📎</button>
+        <textarea id="chat-input" rows="2" placeholder="お客さんの情報と、作ってほしい書類を書く（Enterで送信）"></textarea>
+        <button id="chat-mic" title="音声入力">🎤</button>
+        <button id="chat-send">送信</button>
+      </div>
+      <input type="file" id="chat-file-input" data-nodrop multiple accept="image/*,.pdf,.txt,.md,.csv" style="display:none;">
+    </div>
+    <div id="form-fields"></div>
+  </aside>
+  <section id="preview-wrap"><div class="sheet" id="sheet"></div></section>
+</main>
+
+<!-- 設定モーダル -->
+<div class="modal-back" id="settings-modal">
+  <div class="modal">
+    <button class="close-x" data-close>✕</button>
+    <h2>発行者プロフィール設定</h2>
+    <div class="tab2" id="profile-tabs">
+      <button data-prof="corp" class="active">会社名義</button>
+      <button data-prof="personal">個人名義</button>
+    </div>
+    <div id="profile-form"></div>
+    <h2 style="margin-top:18px;">AIチャット設定</h2>
+    <div class="frow"><label>Gemini APIキー</label><input id="gemini-key-input" type="password" placeholder="secrets.env に書いてあれば空欄でOK"></div>
+    <div class="hint">キー取得: aistudio.google.com/app/apikey。このPCのブラウザ内にのみ保存されます。</div>
+    <h2 style="margin-top:18px;">保存先フォルダ</h2>
+    <div class="hint">PDF保存先の親フォルダを変えたい時：</div>
+    <button class="addrow" id="btn-reset-folder" type="button">📁 保存先フォルダを選び直す</button>
+    <button class="save-btn" id="save-profile">保存する</button>
+  </div>
+</div>
+
+<!-- Gmail下書きモーダル -->
+<div class="modal-back" id="gmail-modal">
+  <div class="modal">
+    <button class="close-x" data-close>✕</button>
+    <h2>Gmail送信下書き</h2>
+    <div class="mail-note">宛先・件名・本文を確認してから進みます。<b>送信は自動で行いません。</b><br>
+      「PDFごと下書きに置く」は、PDFを付けたままGmailの下書きに入ります（下のメール設定が要ります）。<br>
+      「Gmailで下書きを開く」は本文だけ。PDFはGmailの画面で添付してください。</div>
+    <div class="frow"><label>宛先</label><input id="mail-to" type="email" list="addr-list" placeholder="client@example.com"></div>
+    <datalist id="addr-list"></datalist>
+    <div id="addr-chips" style="margin:-4px 0 8px 92px;font-size:11px"></div>
+    <div class="frow"><label>CC</label><input id="mail-cc" type="text" placeholder="必要な場合のみ"></div>
+    <div class="frow"><label>件名</label><input id="mail-subject" type="text"></div>
+    <div class="frow"><label>本文</label><textarea id="mail-body"></textarea></div>
+    <div class="frow" style="align-items:flex-start">
+      <label>PDF</label>
+      <div style="flex:1;font-size:12px;color:#666" id="mail-pdf-note">下書きに置く時、この書類のPDFを作って付けます。</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="save-btn" id="btn-mail-draft" type="button" style="flex:1">PDFごと下書きに置く</button>
+      <button class="save-btn" id="btn-open-gmail" type="button" style="flex:1;background:#6b7280">Gmailで下書きを開く</button>
+    </div>
+    <div id="mail-result" style="font-size:12px;margin-top:8px"></div>
+    <h2 style="margin-top:18px;">メール設定（下書きに置くのに使います）</h2>
+    <div class="frow"><label>Gmailアドレス</label><input id="mail-user" type="email" placeholder="you@gmail.com"></div>
+    <div class="frow"><label>アプリパスワード</label><input id="mail-pass" type="password" placeholder="16桁（空白は入れても構いません）"></div>
+    <div class="hint">2段階認証を有効にしてから myaccount.google.com/apppasswords で発行します。
+      このPCの中（~/.paper-maker/secrets.env）に、本人だけ読める権限で入ります。</div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="addrow" id="btn-mail-save" type="button" style="flex:1">保存して試す</button>
+    </div>
+  </div>
+</div>
+
+<!-- 定期送付モーダル -->
+<div class="modal-back" id="recurring-modal">
+  <div class="modal">
+    <button class="close-x" data-close>✕</button>
+    <h2>定期送付</h2>
+    <div class="mail-note" id="rc-note">読み込み中…</div>
+    <div class="rc-bar">
+      <button type="button" id="rc-add">＋ 請求先を足す</button>
+      <button type="button" id="rc-reload">読み直す</button>
+    </div>
+    <div class="rc-cwbar">
+      <div id="rc-cw">Chatwork：確認中…</div>
+      <div class="rc-cwrow">
+        <input id="rc-token" type="password" placeholder="ChatworkのAPIトークンを貼る（サービス連携 → API Token）">
+        <button type="button" id="rc-token-save">登録</button>
+      </div>
+    </div>
+    <div id="rc-list"></div>
+    <button class="save-btn" id="rc-save" type="button">保存する</button>
+  </div>
+</div>
+
+<!-- 履歴モーダル -->
+<div class="modal-back" id="history-modal">
+  <div class="modal">
+    <button class="close-x" data-close>✕</button>
+    <h2>保存済み書類</h2>
+    <div id="history-list"></div>
+    <button class="addrow" id="btn-import-json" type="button" style="display:none;">📂 保存した .json ファイルを開く</button>
+    <input type="file" id="import-file" data-fd-small data-fd-title="保存した .json ファイルを開く" accept=".json" style="display:none;">
+    <button class="save-btn" id="btn-export-json">全データをJSON書き出し（バックアップ）</button>
+  </div>
+</div>
+
+<!-- 編集バー（web-edit-mode） -->
+<div class="edit-bar" role="toolbar">
+  <span class="badge">編集</span>
+  <button id="edit-toggle" class="primary" type="button">✏ 編集</button>
+  <button id="edit-reset-text" type="button">ラベル戻す</button>
+  <span id="edit-saved" class="saved">✓ 保存</span>
+</div>
+<div class="font-ctrl" id="font-ctrl">
+  <button type="button" id="fc-minus">A−</button>
+  <span class="size" id="fc-size">13px</span>
+  <button type="button" id="fc-plus">A+</button>
+  <button type="button" id="fc-reset" style="font-size:11px;">↺</button>
+</div>
+
+<script>/* 鍵は bridge（/api/profile）か設定画面から */</script>
+<script src="vendor/html2pdf.bundle.min.js"></script>
+<script>
+(function(){
+'use strict';
+const LS = 'papermaker:';
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const today = () => new Date().toISOString().slice(0,10);
+const jd = d => { if(!d) return ''; const [y,m,dd]=d.split('-'); return `${y}年${+m}月${+dd}日`; };
+
+/* ========== 発行者プロフィール ========== */
+const DEFAULT_PROFILES = {
+  corp: {
+    name: '', rep: '',
+    address: '', tel: '', email: '',
+    invoiceNo: '', bank: '', sealText: '', sealType: 'square'
+  },
+  personal: {
+    name: '', rep: '',
+    address: '', tel: '', email: '',
+    invoiceNo: '', bank: '', sealText: '', sealType: 'round'
+  }
+};
+let profiles = JSON.parse(localStorage.getItem(LS+'profiles') || 'null') || JSON.parse(JSON.stringify(DEFAULT_PROFILES));
+function saveProfiles(){ localStorage.setItem(LS+'profiles', JSON.stringify(profiles)); if (typeof pushProfiles === 'function') pushProfiles(); }
+
+/* ========== 会社ロゴ ========== */
+/* 判子と違って色を触らない。渡された画像をそのまま置く */
+function wireLogoBox(){
+  const drop = document.getElementById('logo-drop');
+  if (!drop) return;
+  const input = document.getElementById('logo-file');
+  const take = (file) => {
+    if (!file) return;
+    if (file.size > 4 * 1024 * 1024) { alert('ロゴが大きすぎます（4MBまで）'); return; }
+    const r = new FileReader();
+    r.onload = () => { profiles[profTab].logoImage = String(r.result);
+                       profiles[profTab].logoHeight = profiles[profTab].logoHeight || 12;
+                       saveProfiles(); renderProfileForm(); render(); };
+    r.readAsDataURL(file);
+  };
+  drop.onclick = () => input.click();
+  input.onchange = () => take(input.files[0]);
+  drop.ondragover = e => { e.preventDefault(); drop.style.background = '#eef4ff'; };
+  drop.ondragleave = () => { drop.style.background = '#f7faff'; };
+  drop.ondrop = e => { e.preventDefault(); drop.style.background = '#f7faff'; take(e.dataTransfer.files[0]); };
+  const size = document.getElementById('logo-size');
+  if (size) size.onchange = () => { profiles[profTab].logoHeight = Math.max(6, Math.min(24, +size.value || 12));
+                                    saveProfiles(); render(); };
+  const clear = document.getElementById('logo-clear');
+  if (clear) clear.onclick = () => { delete profiles[profTab].logoImage; saveProfiles(); renderProfileForm(); render(); };
+}
+
+/* ========== 判子の画像 ========== */
+/* 白い紙に押して撮った写真は、周りが白いまま重なって書類を隠す。
+   白い所を透かしてから使う。朱色はそのまま残す。 */
+function sealFromImage(file, cb){
+  const r = new FileReader();
+  r.onload = function(){
+    const img = new Image();
+    img.onload = function(){
+      const side = 512;
+      const c = document.createElement('canvas');
+      c.width = c.height = side;
+      const g = c.getContext('2d');
+      const sc = Math.min(side / img.width, side / img.height);
+      const w = img.width * sc, h = img.height * sc;
+      g.drawImage(img, (side - w) / 2, (side - h) / 2, w, h);
+      const d = g.getImageData(0, 0, side, side), a = d.data;
+      for (let i = 0; i < a.length; i += 4) {
+        const R = a[i], G = a[i+1], B = a[i+2];
+        const mx = Math.max(R, G, B), mn = Math.min(R, G, B);
+        // 明るくて色みが薄い所＝紙。透かす
+        if (mx > 150 && mx - mn < 42) { a[i+3] = 0; continue; }
+        // 残った所は朱色に寄せる。スキャンの色かぶりを揃える
+        const k = Math.min(255, Math.round(255 - mn * 0.55));
+        a[i] = Math.max(R, 150); a[i+1] = Math.round(G * 0.45); a[i+2] = Math.round(B * 0.4);
+        a[i+3] = Math.min(255, Math.round(k * 0.95));
+      }
+      g.putImageData(d, 0, 0);
+      cb(c.toDataURL('image/png'));
+    };
+    img.onerror = function(){ alert('画像を読めませんでした'); };
+    img.src = String(r.result);
+  };
+  r.readAsDataURL(file);
+}
+
+function wireSealBox(){
+  const box = document.getElementById('seal-drop'), fi = document.getElementById('seal-file');
+  if (!box || !fi) return;
+  const take = function(f){
+    if (!f) return;
+    if (f.size > 12 * 1024 * 1024) { alert('画像が大きすぎます（12MBまで）'); return; }
+    sealFromImage(f, function(dataUrl){
+      profiles[profTab].sealImage = dataUrl;
+      if (!profiles[profTab].sealSize) profiles[profTab].sealSize = 17;
+      saveProfiles(); renderProfileForm(); renderPreview();
+    });
+  };
+  box.onclick = function(){ fi.click(); };
+  fi.onchange = function(){ take(fi.files[0]); fi.value = ''; };
+  ['dragenter','dragover'].forEach(n => box.addEventListener(n, e => { e.preventDefault(); box.style.background = '#e9f1ff'; }));
+  ['dragleave','drop'].forEach(n => box.addEventListener(n, e => { e.preventDefault(); box.style.background = '#f7faff'; }));
+  box.addEventListener('drop', e => { if (e.dataTransfer && e.dataTransfer.files) take(e.dataTransfer.files[0]); });
+  const sz = document.getElementById('seal-size');
+  if (sz) sz.onchange = function(){
+    profiles[profTab].sealSize = Math.max(8, Math.min(30, +sz.value || 17));
+    saveProfiles(); renderPreview();
+  };
+  const cl = document.getElementById('seal-clear');
+  if (cl) cl.onclick = function(){
+    delete profiles[profTab].sealImage;
+    saveProfiles(); renderProfileForm(); renderPreview();
+  };
+}
+
+/* ========== 配布版：プロファイル・日当・拠点を外から受ける ========== */
+/* 名義を直したら profile.json にも送る。GUI と CLI で設定が食い違わないように。 */
+let _profSaveTimer = null;
+function pushProfiles(){
+  if (!/^https?:/.test(location.protocol)) return;
+  clearTimeout(_profSaveTimer);
+  _profSaveTimer = setTimeout(function(){
+    fetch('/api/profile', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ profiles: profiles }) })
+      .then(function(){ window.dispatchEvent(new Event('pm-profile-saved')); })
+      .catch(function(){});
+  }, 600);
+}
+function applyProfileLabels(){
+  const cn = (profiles.corp && profiles.corp.name) || '会社名義';
+  const pn = (profiles.personal && profiles.personal.name) ? '個人（' + profiles.personal.name + '）' : '個人名義';
+  document.querySelectorAll('#issuer-select option[value="corp"], button[data-prof="corp"]').forEach(el => el.textContent = cn);
+  document.querySelectorAll('#issuer-select option[value="personal"], button[data-prof="personal"]').forEach(el => el.textContent = pn);
+}
+function applyTravelConfig(t){
+  if (!t) return;
+  if (t.rates) TRAVEL_RATES = t.rates;
+  if (t.bases) {
+    BASES = {};
+    Object.keys(t.bases).forEach(k => { const b = t.bases[k]; BASES[k] = { label: b.label || k, address: b.address || '', hub: b.station || '' }; });
+  }
+  if (Array.isArray(t.routes)) ROUTES = t.routes;
+  if (t.currentBase && !state.travelBase) state.travelBase = t.currentBase;
+}
+(function loadFromBridge(){
+  if (!/^https?:/.test(location.protocol)) return;
+  fetch('/api/profile').then(r => r.ok ? r.json() : null).then(cfg => {
+    if (!cfg) return;
+    if (cfg.profiles) { profiles = Object.assign({}, profiles, cfg.profiles); saveProfiles(); }
+    if (cfg.geminiKey) window.GEMINI_API_KEY = cfg.geminiKey;
+    fetch('/api/ai').then(r => r.ok ? r.json() : null).then(a => {
+      if (a && a.provider) {
+        window.AI_PROVIDER = a.provider;
+        const badge = document.querySelector('.chat-model');
+        if (badge) badge.textContent = a.label || a.provider;
+      }
+    }).catch(() => {});
+    applyTravelConfig(cfg.travel);
+    applyProfileLabels();
+    if (typeof renderForm === 'function') renderForm();
+    if (typeof renderPreview === 'function') renderPreview();
+    if (typeof renderProfileForm === 'function') renderProfileForm();
+  }).catch(() => {});
+})();
+
+/* ========== 書類状態 ========== */
+const TYPE_INFO = {
+  estimate: { title: '御見積書', prefix: 'E' },
+  invoice:  { title: '御請求書', prefix: 'I' },
+  receipt:  { title: '領収書',   prefix: 'R' },
+  contract: { title: '業務委託契約書', prefix: 'C' },
+  travel:   { title: '出張報告・精算書', prefix: 'T' }
+};
+
+function contractTemplate(){
+  return [
+    '<p>{甲}（以下「甲」という。）と {乙}（以下「乙」という。）とは、甲が乙に業務を委託することについて、以下のとおり業務委託契約（以下「本契約」という。）を締結する。</p>',
+    '<h3>第1条（委託業務）</h3><p>甲は乙に対し、次の業務（以下「本業務」という。）を委託し、乙はこれを受託する。</p><p>業務内容：{件名}</p>',
+    '<h3>第2条（契約期間）</h3><p>本契約の有効期間は、契約締結日から本業務の完了日までとする。ただし、甲乙協議のうえ、書面により延長することができる。</p>',
+    '<h3>第3条（委託料）</h3><p>本業務の委託料は、金{金額}円（消費税別）とする。</p>',
+    '<h3>第4条（支払方法）</h3><p>甲は、乙が発行する請求書に基づき、請求書受領月の翌月末日までに、乙の指定する銀行口座に振り込む方法により委託料を支払う。振込手数料は甲の負担とする。</p>',
+    '<h3>第5条（再委託）</h3><p>乙は、本業務の全部又は一部を第三者に再委託する場合、事前に甲へ通知するものとする。</p>',
+    '<h3>第6条（知的財産権）</h3><p>本業務の遂行過程で乙が作成した成果物に関する著作権（著作権法第27条及び第28条の権利を含む。）その他の知的財産権は、乙に留保される。甲は、本契約の目的の範囲内で成果物を利用することができる。</p>',
+    '<h3>第7条（秘密保持）</h3><p>甲及び乙は、本契約に関連して知り得た相手方の技術上・営業上の秘密情報を、相手方の事前の書面による承諾なく第三者に開示又は漏洩してはならない。本条の義務は、本契約終了後も3年間存続する。</p>',
+    '<h3>第8条（個人情報）</h3><p>甲及び乙は、本業務に関連して取り扱う個人情報を、個人情報の保護に関する法律その他の法令に従い適切に管理する。</p>',
+    '<h3>第9条（解除）</h3><p>甲又は乙は、相手方が本契約に違反し、相当の期間を定めて催告したにもかかわらず是正されないときは、本契約を解除することができる。</p>',
+    '<h3>第10条（損害賠償）</h3><p>甲又は乙は、本契約の違反により相手方に損害を与えたときは、直接かつ現実に生じた通常の損害の範囲で賠償責任を負う。ただし、その総額は第3条の委託料の額を上限とする。</p>',
+    '<h3>第11条（反社会的勢力の排除）</h3><p>甲及び乙は、自己が暴力団、暴力団員その他これらに準ずる反社会的勢力に該当しないこと、及び将来にわたって関係を持たないことを表明し保証する。違反が判明した場合、相手方は催告なく本契約を解除できる。</p>',
+    '<h3>第12条（協議・合意管轄）</h3><p>本契約に定めのない事項又は解釈に疑義が生じた事項は、甲乙誠実に協議のうえ解決する。本契約に関する紛争は、甲の本店所在地を管轄する地方裁判所を第一審の専属的合意管轄裁判所とする。</p>',
+    '<p style="margin-top:6mm;">本契約締結の証として本書2通を作成し、甲乙記名押印のうえ、各1通を保有する。</p>'
+  ].join('');
+}
+
+function newDoc(type){
+  const d = {
+    type, issuer: state ? state.issuer : 'corp',
+    project: state ? (state.project || '') : '',
+    docNo: '', date: today(), validUntil: '', dueDate: '',
+    clientName: '', honorific: '御中', clientAddress: '', clientEmail: '', mailCc: '',
+    subject: '',
+    items: [{ name: '', qty: 1, unit: '式', price: 0, taxRate: 10 }],
+    taxMode: 'excl', withholding: false, showSeal: true,
+    notes: '',
+    rAmount: 0, rTadashi: 'お品代として', rMethod: '銀行振込', rShowStamp: true, rShowTax: true,
+    cAmount: 0, cDate: today(), cTitle: '業務委託契約書', cBody: contractTemplate(),
+    travelRole: '代表取締役', travelDestination: '', travelPurpose: '',
+    travelStart: today(), travelEnd: today(), travelLodgingType: '日帰り', travelLodgingPlace: '',
+    travelExpected: '', travelNotes: '', travelActivities: '', travelOutcomes: '', travelIssues: '', travelNextActions: '',
+    travelAdvance: 0, travelExpenses: []
+  };
+  d.docNo = genDocNo(type);
+  return d;
+}
+
+function genDocNo(type){
+  const key = LS + 'seq:' + type;
+  const seq = (parseInt(localStorage.getItem(key) || '0', 10) + 1);
+  localStorage.setItem(key, String(seq));
+  const ymd = today().replace(/-/g,'');
+  return `${TYPE_INFO[type].prefix}-${ymd}-${String(seq).padStart(3,'0')}`;
+}
+
+let state = JSON.parse(localStorage.getItem(LS+'draft') || 'null');
+if (!state) state = newDoc('invoice');
+const TRAVEL_DEFAULTS = {
+  travelRole:'代表取締役', travelBase:'', travelDestination:'', travelPurpose:'', travelStart:today(), travelEnd:today(),
+  travelLodgingType:'日帰り', travelLodgingPlace:'', travelExpected:'', travelNotes:'', travelActivities:'',
+  travelOutcomes:'', travelIssues:'', travelNextActions:'', travelAdvance:0, travelExpenses:[]
+};
+function ensureTravelState(){ Object.keys(TRAVEL_DEFAULTS).forEach(k => { if (state[k] === undefined) state[k] = JSON.parse(JSON.stringify(TRAVEL_DEFAULTS[k])); }); }
+ensureTravelState();
+function saveDraft(){ localStorage.setItem(LS+'draft', JSON.stringify(state)); }
+
+/* ===== 拠点と標準経路 =====
+   出発拠点を選ぶと、その拠点からの経路ボタンが出る。
+   運賃は一度入れると localStorage に残り、次から自動で入る（都度調べ直さないため）。 */
+let BASES = {};
+let ROUTES = [];
+const FARE_LS = LS + 'fares';
+function loadFares(){ try { return JSON.parse(localStorage.getItem(FARE_LS)) || {}; } catch(e){ return {}; } }
+function saveFare(key, amount){
+  if (!key || !(+amount)) return;
+  const f = loadFares(); f[key] = +amount; localStorage.setItem(FARE_LS, JSON.stringify(f));
+}
+function routesFrom(baseId){ return ROUTES.filter(r => r.from === baseId); }
+function addRoute(routeId){
+  const r = ROUTES.find(x => x.id === routeId); if (!r) return;
+  const fares = loadFares();
+  r.legs.forEach(leg => {
+    const row = travelExpenseTemplate(leg.transport === 'バス' ? 'bus' : 'rail');
+    row.from = leg.from; row.to = leg.to; row.note = leg.note;
+    row.transport = leg.transport;
+    row.amount = fares[leg.fareKey] != null ? fares[leg.fareKey] : leg.amount;
+    row.fareKey = leg.fareKey;
+    state.travelExpenses.push(row);
+  });
+  const dest = BASES[r.to];
+  if (dest && !state.travelDestination) state.travelDestination = dest.address;
+}
+
+let TRAVEL_RATES = { '代表取締役':{day:5000,night:10000}, '取締役':{day:4000,night:8000}, '従業員':{day:3000,night:6000} };
+function travelNights(){
+  if (!state.travelStart || !state.travelEnd) return 0;
+  return Math.max(0, Math.round((new Date(state.travelEnd) - new Date(state.travelStart)) / 86400000));
+}
+function travelCalc(){
+  const expenses = Array.isArray(state.travelExpenses) ? state.travelExpenses : [];
+  const actual = expenses.reduce((s,x) => s + (parseFloat(x.amount)||0), 0);
+  const personal = expenses.filter(x => x.payment === '個人立替').reduce((s,x) => s + (parseFloat(x.amount)||0), 0);
+  const nights = travelNights(), hasDates = state.travelStart && state.travelEnd;
+  const rate = TRAVEL_RATES[state.travelRole] || TRAVEL_RATES['従業員'];
+  const dayAllowance = hasDates && nights === 0 ? rate.day : 0;
+  const nightAllowance = nights * rate.night;
+  const allowance = dayAllowance + nightAllowance;
+  const settlement = personal + allowance - (parseFloat(state.travelAdvance)||0);
+  return { actual, personal, company:actual-personal, nights, dayAllowance, nightAllowance, allowance, settlement };
+}
+function travelChecks(){
+  const c = travelCalc(), e = state.travelExpenses || [], warnings = [];
+  const privateStay = ['実家・親族宅','知人宅'].includes(state.travelLodgingType);
+  if (c.nights > 0 && state.travelLodgingType === '日帰り') warnings.push('日付上は宿泊があります。宿泊方法を選択してください。');
+  if (c.nights === 0 && state.travelLodgingType !== '日帰り') warnings.push('宿泊方法が選択されていますが、開始日と終了日が同日です。');
+  if (privateStay && e.some(x => x.category === '宿泊費' && (+x.amount||0) > 0)) warnings.push('実家・知人宅で宿泊費が発生していない場合、宿泊費は0円にしてください。');
+  e.forEach((x,i) => {
+    if (!(+x.amount)) return;
+    const publicTransit = x.category === '交通費' && ['鉄道','バス'].includes(x.transport) && (+x.amount) < 30000;
+    if (!x.receipt && !publicTransit) warnings.push(`明細${i+1}：証憑の有無を選択してください。`);
+    if (['会議費','交際費'].includes(x.category) && (!x.note || !x.note.includes('参加者') || !x.note.includes('目的'))) warnings.push(`明細${i+1}：参加者・相手先との関係・目的を備考へ記録してください。`);
+    if (['会議費','交際費','宿泊費'].includes(x.category) && !['有','電子'].includes(x.receipt)) warnings.push(`明細${i+1}：領収書または電子領収書を確認してください。`);
+    if (x.receipt === '不要（公共交通機関特例）' && (+x.amount) >= 30000) warnings.push(`明細${i+1}：3万円以上の公共交通機関は証憑を確認してください。`);
+  });
+  return [...new Set(warnings)];
+}
+
+/* ========== 計算 ========== */
+function calc(){
+  const items = state.items.filter(i => i.name || i.price);
+  let sub10 = 0, sub8 = 0, sub0 = 0;
+  items.forEach(i => {
+    const a = (parseFloat(i.qty)||0) * (parseFloat(i.price)||0);
+    if (+i.taxRate === 10) sub10 += a; else if (+i.taxRate === 8) sub8 += a; else sub0 += a;
+  });
+  let subtotal, tax10, tax8, total, base10, base8;
+  if (state.taxMode === 'incl') {
+    base10 = sub10 / 1.1; base8 = sub8 / 1.08;
+    tax10 = Math.floor(sub10 - base10); tax8 = Math.floor(sub8 - base8);
+    subtotal = sub10 + sub8 + sub0 - tax10 - tax8;
+    total = sub10 + sub8 + sub0;
+  } else {
+    tax10 = Math.floor(sub10 * 0.10); tax8 = Math.floor(sub8 * 0.08);
+    subtotal = sub10 + sub8 + sub0;
+    total = subtotal + tax10 + tax8;
+  }
+  let withholding = 0;
+  if (state.withholding) {
+    const base = state.taxMode === 'incl' ? subtotal : subtotal;
+    withholding = base <= 1000000
+      ? Math.floor(base * 0.1021)
+      : Math.floor(1000000 * 0.1021 + (base - 1000000) * 0.2042);
+  }
+  return { subtotal, sub10, sub8, sub0, tax10, tax8, total, withholding, pay: total - withholding };
+}
+
+/* ========== フォームパネル描画 ========== */
+function fRow(label, html){ return `<div class="frow"><label>${label}</label>${html}</div>`; }
+function inp(field, type='text', extra=''){ return `<input type="${type}" data-field="${field}" value="${esc(state[field])}" ${extra}>`; }
+function tOptions(values, selected){ return values.map(v => `<option${v===selected?' selected':''}>${esc(v)}</option>`).join(''); }
+
+function renderForm(){
+  ensureTravelState();
+  const t = state.type;
+  let h = '';
+  h += '<h2>基本情報</h2>';
+  h += fRow('プロジェクト', inp('project','text','placeholder="保存先フォルダ名（例: ○○社案件）"'));
+  h += fRow('書類番号', `<div style="display:flex;gap:6px;flex:1;">${inp('docNo')}<button class="numbtn" id="btn-renum">再採番</button></div>`);
+  h += fRow('発行日', inp('date','date'));
+  if (t === 'estimate') h += fRow('有効期限', inp('validUntil','date'));
+  if (t === 'invoice')  h += fRow('支払期限', inp('dueDate','date'));
+  if (t === 'contract') h += fRow('締結日', inp('cDate','date'));
+
+  if (t !== 'travel') {
+    h += '<h2>宛先（相手方）</h2>';
+    h += fRow('宛名', `<div style="display:flex;gap:6px;flex:1;">${inp('clientName','text','placeholder="株式会社○○"')}<select data-field="honorific" style="width:70px;">
+        <option${state.honorific==='御中'?' selected':''}>御中</option>
+        <option${state.honorific==='様'?' selected':''}>様</option>
+        <option value=""${state.honorific===''?' selected':''}>なし</option></select></div>`);
+    h += fRow('住所', `<textarea data-field="clientAddress" placeholder="契約書では甲の住所として使用">${esc(state.clientAddress)}</textarea>`);
+    h += fRow('メール', inp('clientEmail','email','placeholder="送付先メールアドレス"'));
+    h += fRow('CC', inp('mailCc','text','placeholder="複数はカンマ区切り"'));
+  }
+
+  if (t === 'travel') {
+    const tc = travelCalc(), checks = travelChecks();
+    h += '<h2>出張計画</h2>';
+    h += fRow('役職', `<select data-field="travelRole">${tOptions(Object.keys(TRAVEL_RATES),state.travelRole)}</select>`);
+    h += fRow('出張先', inp('travelDestination','text','placeholder="大阪・京都"'));
+    h += fRow('目的・相手', `<textarea data-field="travelPurpose" placeholder="訪問先、面談相手、業務目的">${esc(state.travelPurpose)}</textarea>`);
+    h += fRow('開始日', inp('travelStart','date'));
+    h += fRow('終了日', inp('travelEnd','date'));
+    h += fRow('宿泊方法', `<select data-field="travelLodgingType">${tOptions(['日帰り','ホテル・旅館','実家・親族宅','知人宅','会社手配'],state.travelLodgingType)}</select>`);
+    h += fRow('宿泊先', inp('travelLodgingPlace','text','placeholder="駅前のビジネスホテル"'));
+    h += `<div class="hint">${['実家・親族宅','知人宅'].includes(state.travelLodgingType) ? '宿泊費0円・宿泊領収書不要。宿泊日当は規程額で自動計算します。' : 'ホテル利用時は宿泊費明細と領収書を登録してください。'}</div>`;
+    h += fRow('期待成果', `<textarea data-field="travelExpected">${esc(state.travelExpected)}</textarea>`);
+    h += fRow('実施メモ', `<textarea data-field="travelNotes" placeholder="時系列の訪問・打ち合わせメモ">${esc(state.travelNotes)}</textarea>`);
+    h += '<button class="addrow" id="btn-travel-draft">報告書案を自動作成</button>';
+    h += '<h2>出発拠点</h2>';
+    h += fRow('現在地', `<select data-field="travelBase">${Object.keys(BASES).map(k=>`<option value="${k}"${k===state.travelBase?' selected':''}>${esc(BASES[k].label)}</option>`).join('')}</select>`);
+    h += `<div class="hint">${esc((BASES[state.travelBase]||{}).address||'')}</div>`;
+    {
+      const rs = routesFrom(state.travelBase);
+      if (rs.length) {
+        h += '<h2>よく使う経路</h2>';
+        h += '<div class="travel-quick">' + rs.map(r=>`<button data-travel-route="${r.id}">${r.label}</button>`).join('') + '</div>';
+        h += '<div class="hint">押すと区間ごとの明細が入る。運賃を書き換えて保存すると、次からその額で入る。</div>';
+      }
+    }
+    h += '<h2>経費をかんたん追加</h2>';
+    h += `<div class="travel-quick"><button data-travel-quick="rail">電車・地下鉄</button><button data-travel-quick="bus">バス</button><button data-travel-quick="taxi">タクシー</button><button data-travel-quick="meeting">打ち合わせ飲食</button><button data-travel-quick="entertainment">接待・会食</button><button data-travel-quick="hotel">ホテル</button></div>`;
+    h += '<div class="hint">ボタンで明細を追加し、日付・区間・金額・利用理由を入力してください。会食は備考に「参加者：／関係：／目的：」を残します。</div>';
+    h += '<h2>旅費明細</h2>';
+    (state.travelExpenses || []).forEach((x,i) => {
+      h += `<div class="travel-expense-card">
+        <div class="travel-expense-head"><select data-texp="${i}" data-tk="category">${tOptions(['交通費','宿泊費','会議費','交際費','通信費','その他'],x.category)}</select><input type="number" min="0" data-texp="${i}" data-tk="amount" value="${esc(x.amount)}" placeholder="金額"><button class="del" data-tdel="${i}" title="削除">✕</button></div>
+        <div class="travel-expense-grid"><input type="date" data-texp="${i}" data-tk="date" value="${esc(x.date)}"><select data-texp="${i}" data-tk="transport">${tOptions(['鉄道','バス','航空機','タクシー','その他'],x.transport)}</select>
+        <input data-texp="${i}" data-tk="from" value="${esc(x.from)}" placeholder="出発地・支払先"><input data-texp="${i}" data-tk="to" value="${esc(x.to)}" placeholder="到着地・内容">
+        <select data-texp="${i}" data-tk="payment">${tOptions(['個人立替','会社カード','会社直接払'],x.payment)}</select><select data-texp="${i}" data-tk="receipt">${tOptions(['','有','電子','不要（公共交通機関特例）','不要（支出なし）','紛失申立'],x.receipt)}</select>
+        <input class="wide" data-texp="${i}" data-tk="note" value="${esc(x.note)}" placeholder="利用理由／参加者・関係・目的"></div></div>`;
+    });
+    h += '<button class="addrow" id="btn-travel-add">＋ 空の明細を追加</button>';
+    h += '<h2>出張報告</h2>';
+    h += fRow('実施内容', `<textarea data-field="travelActivities">${esc(state.travelActivities)}</textarea>`);
+    h += fRow('成果・決定', `<textarea data-field="travelOutcomes">${esc(state.travelOutcomes)}</textarea>`);
+    h += fRow('未解決事項', `<textarea data-field="travelIssues">${esc(state.travelIssues)}</textarea>`);
+    h += fRow('次の対応', `<textarea data-field="travelNextActions">${esc(state.travelNextActions)}</textarea>`);
+    h += fRow('仮払金', inp('travelAdvance','number'));
+    h += `<div class="travel-check${checks.length?' warn':''}"><b>${checks.length ? checks.length+'件の確認事項' : '証憑・記録チェック済み'}</b>${checks.length ? '<br>'+checks.map(esc).join('<br>') : '<br>印刷・PDF保存へ進めます。'}<br><br>実費 ${yen(tc.actual)} ／ 日当 ${yen(tc.allowance)} ／ 精算 ${yen(Math.abs(tc.settlement))}</div>`;
+  }
+
+  if (t === 'estimate' || t === 'invoice') {
+    h += '<h2>件名・明細</h2>';
+    h += fRow('件名', inp('subject','text','placeholder="○○制作一式"'));
+    h += `<table class="items-table"><tr><th style="width:42%">品目</th><th>数量</th><th>単位</th><th>単価</th><th>税率</th><th></th></tr>`;
+    state.items.forEach((it, i) => {
+      h += `<tr>
+        <td><input data-item="${i}" data-k="name" value="${esc(it.name)}"></td>
+        <td style="width:52px"><input type="number" data-item="${i}" data-k="qty" value="${esc(it.qty)}"></td>
+        <td style="width:52px"><input data-item="${i}" data-k="unit" value="${esc(it.unit)}"></td>
+        <td style="width:86px"><input type="number" data-item="${i}" data-k="price" value="${esc(it.price)}"></td>
+        <td style="width:66px"><select data-item="${i}" data-k="taxRate">
+          <option value="10"${+it.taxRate===10?' selected':''}>10%</option>
+          <option value="8"${+it.taxRate===8?' selected':''}>8%</option>
+          <option value="0"${+it.taxRate===0?' selected':''}>対象外</option></select></td>
+        <td><button class="del" data-del="${i}">✕</button></td></tr>`;
+    });
+    h += `</table><button class="addrow" id="btn-addrow">＋ 行を追加</button>`;
+    h += `<div class="chkrow"><label><input type="radio" name="taxmode" value="excl"${state.taxMode==='excl'?' checked':''}> 税別入力</label>
+          <label><input type="radio" name="taxmode" value="incl"${state.taxMode==='incl'?' checked':''}> 税込入力</label></div>`;
+    if (t === 'invoice' && state.issuer === 'personal') {
+      h += `<div class="chkrow"><label><input type="checkbox" id="chk-wh"${state.withholding?' checked':''}> 源泉徴収（10.21%）を差し引いて表示</label></div>`;
+    }
+    h += '<h2>備考</h2>';
+    h += `<div class="frow"><textarea data-field="notes" style="flex:1" placeholder="お支払条件・納期など">${esc(state.notes)}</textarea></div>`;
+  }
+
+  if (t === 'receipt') {
+    h += '<h2>領収内容</h2>';
+    h += fRow('金額（税込）', inp('rAmount','number'));
+    h += fRow('但し書き', inp('rTadashi'));
+    h += fRow('受領方法', `<select data-field="rMethod">
+      <option${state.rMethod==='銀行振込'?' selected':''}>銀行振込</option>
+      <option${state.rMethod==='現金'?' selected':''}>現金</option>
+      <option${state.rMethod==='クレジットカード'?' selected':''}>クレジットカード</option></select>`);
+    h += `<div class="chkrow"><label><input type="checkbox" id="chk-rtax"${state.rShowTax?' checked':''}> 内訳（税抜・消費税10%）を表示</label></div>`;
+    h += `<div class="chkrow"><label><input type="checkbox" id="chk-stamp"${state.rShowStamp?' checked':''}> 収入印紙枠を表示（紙で5万円以上の場合）</label></div>`;
+    h += `<div class="hint">※ PDF等の電子発行なら印紙は不要。紙で手渡す場合のみ5万円以上で印紙200円〜が必要。</div>`;
+  }
+
+  if (t === 'contract') {
+    h += '<h2>契約内容</h2>';
+    h += fRow('件名（業務内容）', inp('subject','text','placeholder="第1条に差し込まれます"'));
+    h += fRow('契約金額（税別）', inp('cAmount','number'));
+    h += `<div class="hint">本文はプレビュー側を直接クリックして自由に編集できます（常時編集可）。「テンプレに戻す」で初期条文に復元。<br>※ このテンプレは汎用のたたき台です。重要な契約は必ず内容を確認・調整してください。</div>`;
+    h += `<button class="addrow" id="btn-ctpl">↺ 本文をテンプレに戻す</button>`;
+  }
+
+  if (t !== 'travel') {
+    h += '<h2>表示</h2>';
+    h += `<div class="chkrow"><label><input type="checkbox" id="chk-seal"${state.showSeal?' checked':''}> 印影（社判／認印）を表示</label></div>`;
+    h += `<div class="hint">発行者の住所・口座・インボイス登録番号は右上「⚙ 設定」から。空欄の項目は書類に表示されません。</div>`;
+  }
+  h += `<button class="addrow" id="btn-save-doc" style="border-style:solid;background:var(--accent-soft);font-weight:bold;">💾 この書類を履歴に保存</button>`;
+
+  $('#form-fields').innerHTML = h;
+  $('#btn-gmail').disabled = t === 'travel';
+  $('#btn-gmail').title = t === 'travel' ? '出張報告は社内書類のためGmail送付対象外です' : '宛先・件名・本文を作成してGmailを開きます';
+}
+
+/* ========== プレビュー描画 ========== */
+function issuerBlock(){
+  const p = profiles[state.issuer];
+  const lines = [];
+  lines.push(`<div class="iname">${esc(p.name)}</div>`);
+  if (p.rep) lines.push(esc(p.rep));
+  if (p.address) lines.push(esc(p.address));
+  if (p.tel) lines.push('TEL: ' + esc(p.tel));
+  if (p.email) lines.push(esc(p.email));
+  if (p.invoiceNo) lines.push('登録番号: ' + esc(p.invoiceNo));
+  const seal = !state.showSeal ? ''
+    : (p.sealImage
+        ? `<div class="seal image" style="width:${p.sealSize||17}mm;height:${p.sealSize||17}mm"><img src="${p.sealImage}" alt=""></div>`
+        : `<div class="seal ${p.sealType}">${esc(p.sealText)}</div>`);
+  const logo = p.logoImage
+    ? `<div class="ilogo"><img src="${p.logoImage}" style="height:${p.logoHeight||12}mm;max-width:44mm;object-fit:contain"></div>`
+    : '';
+  return `<div class="issuer-block">${seal}${logo}${lines.join('<br>')}</div>`;
+}
+
+function clientBlock(){
+  return `<div class="client-block">
+    <div class="client-name"><span data-bind="clientName">${esc(state.clientName)}</span>　${esc(state.honorific)}</div>
+    ${state.clientAddress ? `<div class="client-addr" data-bind="clientAddress">${esc(state.clientAddress)}</div>` : ''}
+    ${state.clientEmail ? `<div class="client-addr">${esc(state.clientEmail)}</div>` : ''}
+  </div>`;
+}
+
+function detailTable(c){
+  let rows = '';
+  state.items.forEach(it => {
+    if (!it.name && !it.price) return;
+    const amt = (parseFloat(it.qty)||0) * (parseFloat(it.price)||0);
+    rows += `<tr><td>${esc(it.name)}${+it.taxRate===8?' <small>※軽減税率</small>':''}</td>
+      <td class="ctr">${esc(it.qty)}</td><td class="ctr">${esc(it.unit)}</td>
+      <td class="num">${yen(it.price)}</td><td class="num">${yen(amt)}</td></tr>`;
+  });
+  for (let i = state.items.filter(i=>i.name||i.price).length; i < 5; i++)
+    rows += '<tr><td>&nbsp;</td><td></td><td></td><td></td><td></td></tr>';
+  return `<table class="detail"><tr><th style="width:44%">品目</th><th>数量</th><th>単位</th><th>単価</th><th>金額</th></tr>${rows}</table>`;
+}
+
+function sumsTable(c){
+  const inclNote = state.taxMode === 'incl' ? '（税込入力）' : '';
+  let h = `<table class="sums">`;
+  h += `<tr><td>小計${inclNote ? '（税抜）' : ''}</td><td>${yen(c.subtotal)}</td></tr>`;
+  if (c.sub8 > 0) {
+    h += `<tr><td>消費税（10%対象）</td><td>${yen(c.tax10)}</td></tr>`;
+    h += `<tr><td>消費税（8%対象）</td><td>${yen(c.tax8)}</td></tr>`;
+  } else {
+    h += `<tr><td>消費税（10%）</td><td>${yen(c.tax10)}</td></tr>`;
+  }
+  if (c.withholding > 0) {
+    h += `<tr><td>源泉徴収税額</td><td>−${yen(c.withholding)}</td></tr>`;
+    h += `<tr class="grand"><td>お支払金額</td><td>${yen(c.pay)}</td></tr>`;
+  } else {
+    h += `<tr class="grand"><td>合計金額</td><td>${yen(c.total)}</td></tr>`;
+  }
+  h += `</table>`;
+  return h;
+}
+
+function renderPreview(){
+  const t = state.type, ti = TYPE_INFO[t], c = calc();
+  const sheet = $('#sheet');
+  sheet.classList.toggle('contract', t === 'contract');
+  sheet.classList.toggle('travel', t === 'travel');
+  let h = '';
+
+  if (t === 'estimate' || t === 'invoice') {
+    const isE = t === 'estimate';
+    h += `<div class="doc-title" data-edit="title-${t}">${ti.title}</div>`;
+    h += `<div class="meta-right">
+      No. <span data-bind="docNo">${esc(state.docNo)}</span><br>
+      発行日：${jd(state.date)}
+      ${isE && state.validUntil ? '<br>有効期限：' + jd(state.validUntil) : ''}
+      ${!isE && state.dueDate ? '<br>お支払期限：' + jd(state.dueDate) : ''}
+    </div>`;
+    h += `<div class="head-flex">${clientBlock()}${issuerBlock()}</div>`;
+    h += `<div class="greeting" data-edit="greet-${t}">${isE
+      ? '下記のとおりお見積り申し上げます。ご検討のほどよろしくお願いいたします。'
+      : '下記のとおりご請求申し上げます。よろしくお願いいたします。'}</div>`;
+    if (state.subject) h += `<div style="margin-bottom:3mm;">件名：<b data-bind="subject">${esc(state.subject)}</b></div>`;
+    h += `<div class="total-box"><span class="lbl" data-edit="totallbl-${t}">${isE ? '御見積金額' : '御請求金額'}</span>
+      <span class="amt">${yen(c.withholding > 0 ? c.pay : c.total)}</span>
+      <span class="taxnote">（税込${c.withholding>0?'・源泉徴収後':''}）</span></div>`;
+    h += detailTable(c);
+    h += sumsTable(c);
+    // 振込先は見積書・請求書の両方に常時表示する（2026-08-18 オーナー指示）
+    {
+      const p = profiles[state.issuer];
+      h += `<div class="bank-box"><span class="box-lbl">お振込先</span><div class="pre">${p.bank ? esc(p.bank) : '（未設定：⚙設定から振込先口座を入力してください）'}</div>
+        <div style="font-size:11px;color:#444;margin-top:1mm;" data-edit="bankfee">※ 恐れ入りますが振込手数料は${state.honorific === '様' ? 'お客様' : '貴社'}にてご負担願います。</div></div>`;
+    }
+    h += `<div class="notes-box" data-resize="notes"><span class="box-lbl">備考</span><div class="pre" data-bind="notes">${esc(state.notes)}</div></div>`;
+    if (c.withholding > 0) h += `<div style="font-size:11px;color:#444;">※ 源泉徴収税額（復興特別所得税を含む）を差し引いた金額でのお支払をお願いいたします。</div>`;
+  }
+
+  if (t === 'receipt') {
+    const amt = parseFloat(state.rAmount) || 0;
+    const base = Math.floor(amt / 1.1), tax = amt - base;
+    h += `<div class="doc-title" data-edit="title-receipt">領　収　書</div>`;
+    h += `<div class="meta-right">No. <span data-bind="docNo">${esc(state.docNo)}</span><br>発行日：${jd(state.date)}</div>`;
+    h += `<div style="margin:6mm 10mm 0;"><span class="client-name"><span data-bind="clientName">${esc(state.clientName)}</span>　${esc(state.honorific)}</span></div>`;
+    h += `<div class="ryo-amount"><span style="font-size:14px;font-weight:bold;">金額</span><span class="amt">${yen(amt)}−</span><span style="font-size:12px;">（税込）</span></div>`;
+    h += `<div class="ryo-tadashi">但し　<span data-bind="rTadashi">${esc(state.rTadashi)}</span></div>`;
+    h += `<div style="margin:0 10mm 4mm;font-size:12.5px;" data-edit="ryo-msg">上記の金額を${esc(state.rMethod)}にて正に領収いたしました。</div>`;
+    if (state.rShowTax && amt > 0) {
+      h += `<table class="sums" style="margin-left:10mm;margin-right:auto;">
+        <tr><td>税抜金額</td><td>${yen(base)}</td></tr>
+        <tr><td>消費税額（10%）</td><td>${yen(tax)}</td></tr></table>`;
+    }
+    h += `<div class="ryo-foot" style="margin:14mm 10mm 0;">`;
+    h += state.rShowStamp ? `<div class="stamp-box">収入印紙<br><small>（紙発行で5万円以上の場合）</small></div>` : '<div></div>';
+    h += issuerBlock();
+    h += `</div>`;
+  }
+
+  if (t === 'contract') {
+    const p = profiles[state.issuer];
+    const kou = state.clientName || '（甲）';
+    // 電子署名で締結する時は㊞を出さない。紙に押す欄が残っていると、
+    // 相手が「印刷して押すのか」と迷う（実測 2026-08-23）
+    const stampMark = state.showSeal ? '　　　　　　　　㊞' : '';
+    const otsu = p.name;
+    let body = state.cBody
+      .replaceAll('{甲}', esc(kou))
+      .replaceAll('{乙}', esc(otsu))
+      .replaceAll('{件名}', esc(state.subject || '（件名を入力）'))
+      .replaceAll('{金額}', (parseFloat(state.cAmount)||0).toLocaleString('ja-JP'));
+    h += `<div class="doc-title" style="letter-spacing:0.3em;" data-edit="title-contract">${esc(state.cTitle || '業務委託契約書')}</div>`;
+    h += `<div class="c-body" id="c-body" contenteditable="true">${body}</div>`;
+    h += `<div style="margin-top:8mm;">${jd(state.cDate)}</div>`;
+    h += `<div class="sign-area">
+      <div><b>甲</b><br>住所：<span data-bind="clientAddress">${esc(state.clientAddress)}</span><br>氏名：${esc(kou)}${stampMark}</div>
+      <div><b>乙</b><br>住所：${esc(p.address)}<br>氏名：${esc(p.name)}${p.rep ? '<br>　　　' + esc(p.rep) : ''}${stampMark}</div>
+    </div>`;
+  }
+
+  if (t === 'travel') {
+    const pr = profiles[state.issuer] || {};
+    const tc = travelCalc();
+    const privateStay = ['実家・親族宅','知人宅'].includes(state.travelLodgingType);
+    const stayText = state.travelLodgingType === '日帰り' ? '日帰り' : `${state.travelLodgingType}${state.travelLodgingPlace ? '（'+esc(state.travelLodgingPlace)+'）' : ''}${privateStay ? '・宿泊費0円' : ''}`;
+    const expenseRows = (state.travelExpenses || []).filter(x => x.amount || x.from || x.to || x.note).map((x,i) => `<tr>
+      <td>${i+1}</td><td>${esc(x.date||'')}</td><td>${esc(x.category||'')}</td><td>${esc([x.from,x.to].filter(Boolean).join(' → '))}</td>
+      <td>${esc(x.transport||'')}</td><td>${esc(x.payment||'')}</td><td>${esc(x.receipt||'')}</td><td class="num">${yen(parseFloat(x.amount)||0)}</td><td>${esc(x.note||'')}</td></tr>`).join('');
+    h += `<div class="travel-title"><h2>出張報告・精算書</h2><span>${esc(pr.name||'')}　社内書類</span></div>`;
+    h += `<div class="meta-right">管理番号：${esc(state.docNo)}<br>申請日：${jd(state.date)}</div>`;
+    h += `<div class="travel-grid">
+      <div class="travel-cell"><span class="tl">氏名</span>${esc(state.travelName || (pr.rep||"").split("　").pop() || pr.name || "")}</div><div class="travel-cell"><span class="tl">役職</span>${esc(state.travelRole)}</div>
+      <div class="travel-cell"><span class="tl">開始日</span>${jd(state.travelStart)}</div><div class="travel-cell"><span class="tl">終了日</span>${jd(state.travelEnd)}</div>
+      <div class="travel-cell w2"><span class="tl">出張先</span>${esc(state.travelDestination)}</div><div class="travel-cell w2"><span class="tl">宿泊</span>${stayText}</div>
+      <div class="travel-cell w4"><span class="tl">目的・面談相手</span>${esc(state.travelPurpose)}</div>
+      <div class="travel-cell w4"><span class="tl">期待する成果</span>${esc(state.travelExpected)}</div></div>`;
+    h += `<div class="travel-section"><h3>出張報告</h3><div class="travel-report-box"><b>実施内容</b><br>${esc(state.travelActivities)}</div></div>`;
+    h += `<div class="travel-grid" style="margin-top:2mm;"><div class="travel-cell w2"><span class="tl">成果・決定事項</span>${esc(state.travelOutcomes)}</div><div class="travel-cell w2"><span class="tl">未解決事項</span>${esc(state.travelIssues)}</div><div class="travel-cell w4"><span class="tl">次のアクション</span>${esc(state.travelNextActions)}</div></div>`;
+    h += `<div class="travel-section"><h3>旅費明細</h3><table class="travel-detail"><colgroup><col style="width:5%"><col style="width:10%"><col style="width:9%"><col style="width:18%"><col style="width:8%"><col style="width:10%"><col style="width:11%"><col style="width:10%"><col style="width:19%"></colgroup><tr><th>No.</th><th>日付</th><th>区分</th><th>区間・内容</th><th>手段</th><th>支払</th><th>証憑</th><th>金額</th><th>備考</th></tr>${expenseRows || '<tr><td colspan="9" style="height:12mm;"></td></tr>'}</table></div>`;
+    h += `<div class="travel-summary"><div><b>実費総額</b>${yen(tc.actual)}</div><div><b>日当合計</b>${yen(tc.allowance)}</div><div><b>仮払金</b>${yen(state.travelAdvance)}</div><div><b>${tc.settlement>=0?'会社から支給':'会社へ返納'}</b>${yen(Math.abs(tc.settlement))}</div></div>`;
+    h += `<div class="travel-section"><h3>確認</h3><div class="travel-grid"><div class="travel-cell"><span class="tl">申請者</span></div><div class="travel-cell"><span class="tl">承認者</span></div><div class="travel-cell w2"><span class="tl">経理確認</span></div></div></div>`;
+  }
+
+  sheet.innerHTML = h;
+  applyLabelEdits();
+  applyEditingAttrs();
+}
+
+/* ========== ラベル直接編集（web-edit-mode 準拠） ========== */
+const EDIT_PREFIX = LS + 'edit:';
+const FONT_PREFIX = LS + 'font:';
+function applyLabelEdits(){
+  $$('#sheet [data-edit]').forEach(el => {
+    const k = el.dataset.edit;
+    const saved = localStorage.getItem(EDIT_PREFIX + k);
+    if (saved !== null) el.innerHTML = saved;
+    const f = localStorage.getItem(FONT_PREFIX + k);
+    if (f) el.style.fontSize = f;
+  });
+}
+let editing = false;
+function applyEditingAttrs(){
+  $$('#sheet [data-edit], #sheet [data-bind]').forEach(el => {
+    el.contentEditable = editing ? 'true' : 'false';
+  });
+  const cb = $('#c-body');
+  if (cb) cb.contentEditable = 'true';
+}
+const savedTag = $('#edit-saved');
+let savedTimer = null;
+function flashSaved(){
+  savedTag.classList.add('show');
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(() => savedTag.classList.remove('show'), 800);
+}
+$('#edit-toggle').addEventListener('click', () => {
+  editing = !editing;
+  document.body.classList.toggle('editing', editing);
+  $('#edit-toggle').classList.toggle('active', editing);
+  $('#edit-toggle').textContent = editing ? '✓ 編集中' : '✏ 編集';
+  applyEditingAttrs();
+});
+$('#edit-reset-text').addEventListener('click', () => {
+  if (!confirm('直接編集したラベル文言と文字サイズをすべて初期に戻します。よろしいですか？')) return;
+  Object.keys(localStorage).forEach(k => {
+    if (k.startsWith(EDIT_PREFIX) || k.startsWith(FONT_PREFIX)) localStorage.removeItem(k);
+  });
+  renderPreview();
+});
+
+/* プレビュー直接編集 → 保存/状態書き戻し */
+$('#sheet').addEventListener('input', e => {
+  const el = e.target.closest('[data-edit],[data-bind],#c-body');
+  if (!el) return;
+  if (el.id === 'c-body') {
+    state.cBody = el.innerHTML; saveDraft(); flashSaved(); return;
+  }
+  if (el.dataset.edit) {
+    localStorage.setItem(EDIT_PREFIX + el.dataset.edit, el.innerHTML); flashSaved(); return;
+  }
+  if (el.dataset.bind) {
+    state[el.dataset.bind] = el.innerText;
+    const fi = document.querySelector(`#form-panel [data-field="${el.dataset.bind}"]`);
+    if (fi) fi.value = el.innerText;
+    saveDraft(); flashSaved();
+  }
+});
+$('#sheet').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey && e.target.closest('[data-edit],[data-bind]')) {
+    e.preventDefault();
+    document.execCommand('insertLineBreak');
+  }
+});
+
+/* フォントサイズコントローラ */
+const fontCtrl = $('#font-ctrl'); let fontTarget = null;
+function getPx(el){ return parseFloat(getComputedStyle(el).fontSize) || 13; }
+function positionFC(el){
+  const r = el.getBoundingClientRect();
+  fontCtrl.style.top = Math.max(8, r.top + scrollY - 44) + 'px';
+  fontCtrl.style.left = Math.max(8, r.left + scrollX) + 'px';
+}
+$('#sheet').addEventListener('focusin', e => {
+  if (!editing) return;
+  const el = e.target.closest('[data-edit]');
+  if (!el) { fontCtrl.classList.remove('show'); fontTarget = null; return; }
+  fontTarget = el;
+  $('#fc-size').textContent = Math.round(getPx(el)) + 'px';
+  positionFC(el);
+  fontCtrl.classList.add('show');
+});
+document.addEventListener('mousedown', e => {
+  if (fontCtrl.contains(e.target) || e.target.closest('[data-edit]')) return;
+  fontCtrl.classList.remove('show'); fontTarget = null;
+});
+function applyFont(px){
+  if (!fontTarget) return;
+  fontTarget.style.fontSize = px + 'px';
+  localStorage.setItem(FONT_PREFIX + fontTarget.dataset.edit, px + 'px');
+  $('#fc-size').textContent = px + 'px';
+  flashSaved();
+}
+$('#fc-minus').addEventListener('mousedown', e => { e.preventDefault(); applyFont(Math.max(8, Math.round(getPx(fontTarget)) - 1)); });
+$('#fc-plus').addEventListener('mousedown', e => { e.preventDefault(); applyFont(Math.min(60, Math.round(getPx(fontTarget)) + 1)); });
+$('#fc-reset').addEventListener('mousedown', e => {
+  e.preventDefault();
+  if (!fontTarget) return;
+  fontTarget.style.fontSize = '';
+  localStorage.removeItem(FONT_PREFIX + fontTarget.dataset.edit);
+  $('#fc-size').textContent = Math.round(getPx(fontTarget)) + 'px';
+});
+
+function travelExpenseTemplate(kind){
+  const base = { date:state.travelStart || today(), category:'交通費', from:'', to:'', transport:'鉄道', payment:'個人立替', receipt:'不要（公共交通機関特例）', amount:0, note:'' };
+  if (kind === 'bus') base.transport = 'バス';
+  if (kind === 'taxi') { base.transport='タクシー'; base.receipt='有'; base.note='目的：取引先訪問のため／利用理由：'; }
+  if (kind === 'meeting') { base.category='会議費'; base.transport='その他'; base.receipt='有'; base.note='参加者：／関係：／目的：'; }
+  if (kind === 'entertainment') { base.category='交際費'; base.transport='その他'; base.receipt='有'; base.note='参加者：／関係：／目的：'; }
+  if (kind === 'hotel') { base.category='宿泊費'; base.transport='その他'; base.receipt='有'; base.note='宿泊費'; }
+  return base;
+}
+function makeTravelDraft(){
+  const e = (state.travelExpenses || []).filter(x => x.amount || x.from || x.to || x.note);
+  const lines = [];
+  if (state.travelDestination) lines.push(`${state.travelDestination}へ出張。`);
+  if (state.travelPurpose) lines.push(`目的・面談相手：${state.travelPurpose}`);
+  if (state.travelLodgingType !== '日帰り') lines.push(`宿泊：${state.travelLodgingPlace || state.travelLodgingType}（${state.travelLodgingType}${['実家・親族宅','知人宅'].includes(state.travelLodgingType)?'、宿泊費の支出なし':''}）`);
+  const moves = e.filter(x=>x.category==='交通費').map(x=>[x.date,[x.from,x.to].filter(Boolean).join(' → '),x.note].filter(Boolean).join('／'));
+  const meetings = e.filter(x=>['会議費','交際費'].includes(x.category)).map(x=>[x.date,x.from||x.to,x.note].filter(Boolean).join('／'));
+  if (moves.length) lines.push('移動記録：'+moves.join('。'));
+  if (meetings.length) lines.push('打ち合わせ・会食：'+meetings.join('。'));
+  if (state.travelNotes) lines.push('実施記録：'+state.travelNotes);
+  state.travelActivities = lines.join('\n');
+}
+
+/* ========== フォームイベント（委譲） ========== */
+$('#form-panel').addEventListener('input', e => {
+  const t = e.target;
+  if (t.dataset.field) {
+    state[t.dataset.field] = t.value;
+    if (t.dataset.field === 'travelBase') { saveDraft(); renderForm(); renderPreview(); return; }
+  }
+  else if (t.dataset.texp !== undefined && t.dataset.tk) {
+    const row = state.travelExpenses[+t.dataset.texp];
+    row[t.dataset.tk] = t.value;
+    if (t.dataset.tk === 'amount' && row.fareKey) saveFare(row.fareKey, t.value);
+  }
+  else if (t.dataset.item !== undefined && t.dataset.k) {
+    state.items[+t.dataset.item][t.dataset.k] = t.value;
+  }
+  else if (t.name === 'taxmode') { state.taxMode = t.value; }
+  else return;
+  saveDraft(); renderPreview();
+});
+$('#form-panel').addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'chk-wh') state.withholding = t.checked;
+  else if (t.id === 'chk-seal') state.showSeal = t.checked;
+  else if (t.id === 'chk-rtax') state.rShowTax = t.checked;
+  else if (t.id === 'chk-stamp') state.rShowStamp = t.checked;
+  else return;
+  saveDraft(); renderPreview();
+});
+$('#form-panel').addEventListener('click', e => {
+  const t = e.target;
+  if (t.id === 'btn-addrow') {
+    state.items.push({ name:'', qty:1, unit:'式', price:0, taxRate:10 });
+    saveDraft(); renderForm(); renderPreview();
+  }
+  if (t.dataset.del !== undefined && t.classList.contains('del')) {
+    state.items.splice(+t.dataset.del, 1);
+    if (!state.items.length) state.items.push({ name:'', qty:1, unit:'式', price:0, taxRate:10 });
+    saveDraft(); renderForm(); renderPreview();
+  }
+  if (t.id === 'btn-renum') {
+    state.docNo = genDocNo(state.type);
+    saveDraft(); renderForm(); renderPreview();
+  }
+  if (t.id === 'btn-ctpl') {
+    if (confirm('契約書本文を初期テンプレートに戻します。編集内容は失われます。よろしいですか？')) {
+      state.cBody = contractTemplate();
+      saveDraft(); renderPreview();
+    }
+  }
+  if (t.id === 'btn-save-doc') saveToHistory();
+  if (t.id === 'btn-travel-add') {
+    state.travelExpenses.push(travelExpenseTemplate('rail'));
+    saveDraft(); renderForm(); renderPreview();
+  }
+  if (t.dataset.travelRoute) {
+    addRoute(t.dataset.travelRoute);
+    saveDraft(); renderForm(); renderPreview(); return;
+  }
+  if (t.dataset.travelQuick) {
+    state.travelExpenses.push(travelExpenseTemplate(t.dataset.travelQuick));
+    saveDraft(); renderForm(); renderPreview();
+  }
+  if (t.dataset.tdel !== undefined) {
+    state.travelExpenses.splice(+t.dataset.tdel,1);
+    saveDraft(); renderForm(); renderPreview();
+  }
+  if (t.id === 'btn-travel-draft') {
+    makeTravelDraft(); saveDraft(); renderForm(); renderPreview();
+  }
+});
+
+/* ========== タブ・名義・新規 ========== */
+function setType(type){
+  const keep = state;
+  state.type = type;
+  if (!state.docNo || state.docNo[0] !== TYPE_INFO[type].prefix) state.docNo = genDocNo(type);
+  saveDraft();
+  $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.type === type));
+  renderForm(); renderPreview();
+}
+$$('#tabs button').forEach(b => {
+  if (!b.dataset.type) return;            // 定期送付ボタンは書類種別ではない
+  b.addEventListener('click', () => setType(b.dataset.type));
+});
+$('#issuer-select').addEventListener('change', e => {
+  state.issuer = e.target.value;
+  saveDraft(); renderForm(); renderPreview();
+});
+$('#btn-new').addEventListener('click', () => {
+  if (!confirm('新規書類を作成します。現在の下書きは破棄されます（履歴保存済みなら残ります）。')) return;
+  const type = state.type, issuer = state.issuer;
+  state = newDoc(type); state.issuer = issuer;
+  saveDraft(); renderForm(); renderPreview();
+});
+function buildMailDraft(){
+  const p = profiles[state.issuer], title = TYPE_INFO[state.type].title, c = calc();
+  const addressee = `${state.clientName || 'ご担当者'} ${state.honorific || '様'}`.trim();
+  const amount = state.type === 'receipt' ? (parseFloat(state.rAmount)||0)
+    : state.type === 'contract' ? (parseFloat(state.cAmount)||0)
+    : (c.withholding > 0 ? c.pay : c.total);
+  const subject = `【${p.name}】${title}送付のご案内（${state.docNo}）`;
+  const lines = [`${addressee}`,'','いつもお世話になっております。',`${p.name}${p.rep ? 'の' + p.rep.replace(/^代表取締役\s*/, '') : ''}です。`,''];
+  if (state.type === 'estimate') lines.push(`「${state.subject || 'ご依頼内容'}」の見積書をお送りします。`,`お見積金額：${yen(amount)}（税込）`,state.validUntil ? `有効期限：${jd(state.validUntil)}` : '');
+  if (state.type === 'invoice') lines.push(`「${state.subject || 'ご依頼内容'}」の請求書をお送りします。`,`ご請求金額：${yen(amount)}（税込）`,state.dueDate ? `お支払期限：${jd(state.dueDate)}` : '');
+  if (state.type === 'receipt') lines.push('領収書をお送りします。',`領収金額：${yen(amount)}（税込）`);
+  if (state.type === 'contract') lines.push(`「${state.subject || '業務委託'}」の契約書をお送りします。`,`契約金額：${yen(amount)}（税別）`);
+  lines.push('','添付のPDFをご確認ください。','ご不明点や修正点がございましたら、お知らせください。','','よろしくお願いいたします。','',p.name,p.rep||'',p.address||'',p.tel ? `TEL：${p.tel}` : '',p.email ? `Email：${p.email}` : '');
+  return { to:state.clientEmail||'', cc:state.mailCc||'', subject, body:lines.filter((x,i,a) => x !== '' || a[i-1] !== '').join('\n').trim() };
+}
+$('#btn-gmail').addEventListener('click', () => {
+  if (state.type === 'travel') return;
+  const d = buildMailDraft();
+  $('#mail-to').value = d.to; $('#mail-cc').value = d.cc; $('#mail-subject').value = d.subject; $('#mail-body').value = d.body;
+  $('#gmail-modal').classList.add('show');
+  if (typeof fillAddresses === 'function') fillAddresses();
+  if (!d.to) $('#mail-to').focus();
+});
+$('#btn-open-gmail').addEventListener('click', () => {
+  const to = $('#mail-to').value.trim(), cc = $('#mail-cc').value.trim(), subject = $('#mail-subject').value.trim(), body = $('#mail-body').value;
+  if (!to || !/^[^\s@]+@[^\s@]+\.[^\s@]+(?:\s*,\s*[^\s@]+@[^\s@]+\.[^\s@]+)*$/.test(to)) { alert('有効な宛先メールアドレスを入力してください。'); $('#mail-to').focus(); return; }
+  state.clientEmail = to; state.mailCc = cc; saveDraft(); renderForm(); renderPreview();
+  const params = new URLSearchParams({view:'cm',fs:'1',tf:'1',to,cc,su:subject,body});
+  window.open('https://mail.google.com/mail/?' + params.toString(), '_blank', 'noopener');
+  $('#gmail-modal').classList.remove('show');
+});
+$('#btn-print').addEventListener('click', () => window.print());
+
+/* ========== 履歴 ========== */
+function getHistory(){ return JSON.parse(localStorage.getItem(LS+'history') || '[]'); }
+function setHistory(h){ localStorage.setItem(LS+'history', JSON.stringify(h)); }
+function saveToHistory(){
+  const h = getHistory();
+  const c = calc();
+  const amount = state.type === 'receipt' ? (parseFloat(state.rAmount)||0)
+               : state.type === 'contract' ? (parseFloat(state.cAmount)||0)
+               : state.type === 'travel' ? travelCalc().actual + travelCalc().allowance
+               : c.total;
+  const target = state.type === 'travel' ? (state.travelDestination || '出張先未入力') : (state.clientName || '宛名未入力');
+  h.unshift({
+    id: Date.now(), savedAt: today(),
+    label: `${TYPE_INFO[state.type].title} ${state.docNo} ／ ${target} ／ ${yen(amount)}`,
+    doc: JSON.parse(JSON.stringify(state))
+  });
+  setHistory(h);
+  alert('履歴に保存しました。');
+}
+function renderHistory(){
+  const h = getHistory();
+  $('#history-list').innerHTML = h.length ? h.map(x => `
+    <div class="hist-item">
+      <div class="hi-main"><div class="hi-title">${esc(x.label)}</div><div class="hi-sub">保存日: ${x.savedAt}</div></div>
+      <button class="load" data-load="${x.id}">開く</button>
+      <button class="del" data-hdel="${x.id}">削除</button>
+    </div>`).join('') : '<p style="color:var(--sub);font-size:13px;">まだ保存された書類はありません。</p>';
+}
+$('#btn-history').addEventListener('click', () => { renderHistory(); $('#history-modal').classList.add('show'); });
+$('#history-list').addEventListener('click', e => {
+  const t = e.target;
+  if (t.dataset.load) {
+    const x = getHistory().find(v => v.id === +t.dataset.load);
+    if (x) {
+      state = JSON.parse(JSON.stringify(x.doc));
+      saveDraft();
+      $('#issuer-select').value = state.issuer;
+      $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.type === state.type));
+      renderForm(); renderPreview();
+      $('#history-modal').classList.remove('show');
+    }
+  }
+  if (t.dataset.hdel) {
+    if (!confirm('この履歴を削除します。よろしいですか？')) return;
+    setHistory(getHistory().filter(v => v.id !== +t.dataset.hdel));
+    renderHistory();
+  }
+});
+$('#btn-import-json').addEventListener('click', () => $('#import-file').click());
+$('#import-file').addEventListener('change', () => {
+  const f = $('#import-file').files[0];
+  if (!f) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try {
+      const obj = JSON.parse(fr.result);
+      if (obj.type && TYPE_INFO[obj.type]) {
+        state = Object.assign(newDoc(obj.type), obj);
+      } else if (obj.draft) {
+        if (!confirm('バックアップ全体（下書き・履歴・プロフィール）を復元します。よろしいですか？')) return;
+        if (obj.profiles) { profiles = obj.profiles; saveProfiles(); }
+        if (obj.history) setHistory(obj.history);
+        state = obj.draft;
+      } else { throw new Error('形式が違います'); }
+      saveDraft();
+      $('#issuer-select').value = state.issuer;
+      $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.type === state.type));
+      renderForm(); renderPreview();
+      $('#history-modal').classList.remove('show');
+    } catch(e) { alert('読み込めませんでした：' + e.message); }
+  };
+  fr.readAsText(f);
+  $('#import-file').value = '';
+});
+$('#btn-export-json').addEventListener('click', () => {
+  const dump = {
+    exportedAt: new Date().toISOString(),
+    profiles, draft: state, history: getHistory()
+  };
+  const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `paper-maker-backup-${today()}.json`;
+  a.click();
+});
+
+/* ========== 設定モーダル ========== */
+let profTab = 'corp';
+function renderProfileForm(){
+  const p = profiles[profTab];
+  const f = (lbl, key, ph='') => `<div class="frow"><label>${lbl}</label><input data-pf="${key}" value="${esc(p[key])}" placeholder="${ph}"></div>`;
+  $('#profile-form').innerHTML =
+    f('名称', 'name') +
+    f('代表者表記', 'rep', '代表取締役　○○（個人は空欄可）') +
+    f('住所', 'address') +
+    f('電話', 'tel') +
+    f('メール', 'email') +
+    f('インボイス登録番号', 'invoiceNo', 'T+13桁（未登録なら空欄）') +
+    `<div class="frow"><label>振込先口座</label><textarea data-pf="bank" placeholder="○○銀行 ○○支店（支店番号）&#10;普通 1234567&#10;ﾂｼﾞ ﾐｽﾞｷ">${esc(p.bank)}</textarea></div>` +
+    f('印影の文字', 'sealText') +
+    `<div class="frow"><label>印影の形</label><select data-pf="sealType">
+      <option value="square"${p.sealType==='square'?' selected':''}>角印（会社）</option>
+      <option value="round"${p.sealType==='round'?' selected':''}>丸印（個人）</option></select></div>` +
+    `<div class="frow"><label>判子の画像</label><div style="flex:1">
+      <div id="seal-drop" style="border:1px solid #c9d6ea;border-radius:6px;background:#f7faff;padding:10px;text-align:center;cursor:pointer;margin-bottom:6px${p.sealImage ? '' : ';display:none'}">
+        ${p.sealImage ? '<img src="'+p.sealImage+'" style="max-height:56px">' : ''}
+      </div>
+      <input type="file" id="seal-file" data-fd-small data-fd-title="実物の判子を押して撮った画像を、ここに放り込む" accept="image/*" style="display:none">
+      <div style="font-size:11px;color:#666;margin-top:4px">
+        白い紙に押して撮る（またはスキャン）。白い所は自動で透かします。
+        <span id="seal-size-wrap" ${p.sealImage?'':'style="display:none"'}>
+          大きさ <input type="number" id="seal-size" value="${p.sealSize||17}" min="8" max="30" style="width:52px"> mm
+        </span>
+        ${p.sealImage ? '<button type="button" id="seal-clear" style="margin-left:6px">画像をやめる</button>' : ''}
+      </div></div></div>`;
+    + `<div class="frow"><label>会社ロゴ</label><div style="flex:1">
+      <div id="logo-drop" style="border:1px solid #c9d6ea;border-radius:6px;background:#f7faff;padding:10px;text-align:center;cursor:pointer;margin-bottom:6px${p.logoImage ? '' : ';display:none'}">
+        ${p.logoImage ? '<img src="'+p.logoImage+'" style="max-height:44px">' : ''}
+      </div>
+      <input type="file" id="logo-file" data-fd-small data-fd-title="ロゴの画像を、ここに放り込む" accept="image/*" style="display:none">
+      <div style="font-size:11px;color:#666;margin-top:4px">
+        書類の右上、名義の上に出ます。透過PNGが向いています。
+        <span id="logo-size-wrap" ${p.logoImage?'':'style="display:none"'}>
+          高さ <input type="number" id="logo-size" value="${p.logoHeight||12}" min="6" max="24" style="width:52px"> mm
+        </span>
+        ${p.logoImage ? '<button type="button" id="logo-clear" style="margin-left:6px">ロゴをやめる</button>' : ''}
+      </div></div></div>`;
+  wireSealBox();
+  wireLogoBox();
+  $$('#profile-tabs button').forEach(b => b.classList.toggle('active', b.dataset.prof === profTab));
+}
+$('#btn-settings').addEventListener('click', () => {
+  renderProfileForm();
+  $('#gemini-key-input').value = localStorage.getItem(LS+'apikey') || '';
+  $('#settings-modal').classList.add('show');
+});
+$('#profile-tabs').addEventListener('click', e => {
+  if (e.target.dataset.prof) { profTab = e.target.dataset.prof; renderProfileForm(); }
+});
+$('#profile-form').addEventListener('input', e => {
+  if (e.target.dataset.pf) profiles[profTab][e.target.dataset.pf] = e.target.value;
+});
+$('#save-profile').addEventListener('click', () => {
+  saveProfiles();
+  const k = $('#gemini-key-input').value.trim();
+  if (k) localStorage.setItem(LS+'apikey', k); else localStorage.removeItem(LS+'apikey');
+  renderPreview();
+  $('#settings-modal').classList.remove('show');
+});
+$$('.modal-back').forEach(m => {
+  m.addEventListener('click', e => {
+    if (e.target === m || e.target.hasAttribute('data-close')) m.classList.remove('show');
+  });
+});
+
+/* ========== AIチャット（Gemini） ========== */
+const GEMINI_MODEL = 'gemini-2.5-flash';
+async function sendChatViaBridge(text){
+  chatInput.value = '';
+  const fileNote = pendingFiles.length ? `［添付: ${pendingFiles.map(f => f.name).join('、')}］` : '';
+  addMsg('user', (fileNote ? fileNote + '\n' : '') + text);
+  const img = pendingFiles.length ? pendingFiles[0].b64 : null;
+  pendingFiles = []; renderFileChips();
+  const wait = addMsg('ai wait', '考え中…（CLI経由は1分ほどかかります）');
+  chatSend.disabled = true;
+  try {
+    const r = await fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ system: sysPrompt(), text: text || '添付から、この書類に入れられる情報を読み取って設定してください。', image: img }) });
+    const d = await r.json();
+    wait.remove();
+    if (d.error) { addMsg('ai err', d.error); return; }
+    const parsed = d.answer || {};
+    applyUpdates(parsed.updates);
+    const qs = Array.isArray(parsed.questions) ? parsed.questions.filter(Boolean).slice(0,3) : [];
+    addMsg('ai', (parsed.reply || '反映しました。')
+      + (qs.length ? '\n\n確認したいこと：\n' + qs.map((q,i) => `${i+1}. ${q}`).join('\n') : ''));
+  } catch (e) {
+    wait.remove(); addMsg('ai err', 'うまくいきませんでした: ' + e.message);
+  } finally { chatSend.disabled = false; }
+}
+
+function getGeminiKey(){ return (window.GEMINI_API_KEY || localStorage.getItem(LS+'apikey') || '').trim(); }
+const chatLog = $('#chat-log'), chatInput = $('#chat-input'), chatSend = $('#chat-send');
+let chatHistory = [];
+
+const RESPONSE_SCHEMA = {
+  type: 'OBJECT',
+  properties: {
+    reply: { type: 'STRING' },
+    needsClarification: { type: 'BOOLEAN' },
+    questions: { type: 'ARRAY', items: { type: 'STRING' } },
+    updates: { type: 'OBJECT', properties: {
+      type: { type: 'STRING', enum: ['estimate','invoice','receipt','contract','travel'] },
+      issuer: { type: 'STRING', enum: ['corp','personal'] },
+      project: { type: 'STRING' },
+      date: { type: 'STRING' }, validUntil: { type: 'STRING' }, dueDate: { type: 'STRING' },
+      clientName: { type: 'STRING' },
+      honorific: { type: 'STRING', enum: ['御中','様','なし'] },
+      clientAddress: { type: 'STRING' }, clientEmail: { type: 'STRING' }, mailCc: { type: 'STRING' }, subject: { type: 'STRING' },
+      taxMode: { type: 'STRING', enum: ['excl','incl'] },
+      withholding: { type: 'BOOLEAN' },
+      notes: { type: 'STRING' },
+      items: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+        name: { type: 'STRING' }, qty: { type: 'NUMBER' }, unit: { type: 'STRING' },
+        price: { type: 'NUMBER' }, taxRate: { type: 'NUMBER' } } } },
+      rAmount: { type: 'NUMBER' }, rTadashi: { type: 'STRING' },
+      rMethod: { type: 'STRING', enum: ['銀行振込','現金','クレジットカード'] },
+      cAmount: { type: 'NUMBER' }, cDate: { type: 'STRING' },
+      travelRole: { type: 'STRING', enum: ['代表取締役','取締役','従業員'] },
+      travelDestination: { type: 'STRING' }, travelPurpose: { type: 'STRING' },
+      travelStart: { type: 'STRING' }, travelEnd: { type: 'STRING' },
+      travelLodgingType: { type: 'STRING', enum: ['日帰り','ホテル・旅館','実家・親族宅','知人宅','会社手配'] },
+      travelLodgingPlace: { type: 'STRING' }, travelExpected: { type: 'STRING' }, travelNotes: { type: 'STRING' },
+      travelActivities: { type: 'STRING' }, travelOutcomes: { type: 'STRING' }, travelIssues: { type: 'STRING' }, travelNextActions: { type: 'STRING' },
+      travelAdvance: { type: 'NUMBER' },
+      travelExpenses: { type: 'ARRAY', items: { type: 'OBJECT', properties: {
+        date:{type:'STRING'}, category:{type:'STRING'}, from:{type:'STRING'}, to:{type:'STRING'}, transport:{type:'STRING'},
+        payment:{type:'STRING'}, receipt:{type:'STRING'}, amount:{type:'NUMBER'}, note:{type:'STRING'} } } }
+    } }
+  },
+  required: ['reply','needsClarification']
+};
+
+function sysPrompt(){
+  const cur = Object.assign({}, state); delete cur.cBody;
+  return `あなたは日本のビジネス帳票作成アプリ「書類メーカー」のアシスタント。今日は ${today()}。
+ユーザーの日本語の指示から書類データを抽出し、updates には「変更すべきフィールドだけ」を入れて返す。
+分かる情報は先に updates へ入れ、推測で補完してはいけない。
+書類完成に必要な情報が不足している場合は needsClarification=true とし、questions に具体的な質問を最大3件入れる。reply には「反映した内容」と「確認が必要な理由」を短く書く。
+すでに現在の書類状態に入っている情報は聞き直さない。ユーザーの回答を受けたら前回までの内容を維持して追加反映する。
+不足がなければ needsClarification=false とし、questions は省略または空配列にする。
+書類別の確認項目:
+- 見積書: 宛名、件名、品目、数量、単価、税区分、有効期限
+- 請求書: 宛名、件名、品目、数量、単価、税区分、支払期限
+- 領収書: 宛名、金額、但し書き、受領方法、発行日
+- 契約書: 相手方名・住所、業務内容、契約金額、締結日
+- 出張報告: 出張先、業務目的・面談相手、開始日・終了日、宿泊方法、交通経路・金額、会食があれば参加者・関係・目的、実施内容、成果または未決事項
+メール送付を希望している場合は clientEmail も確認する。
+フィールド仕様:
+- type: estimate=見積書 / invoice=請求書 / receipt=領収書 / contract=契約書 / travel=出張報告・精算書
+- issuer: corp=会社名義 / personal=個人名義。名義の指示があった時だけ設定
+- project: 保存先のプロジェクト名（案件名・フォルダ名）。「〇〇案件で」「〇〇のフォルダに」等の指示があった時だけ設定
+- 日付（date=発行日, validUntil=見積有効期限, dueDate=支払期限, cDate=契約締結日）は YYYY-MM-DD。「月末」「来月末」等は今日を基準に具体化
+- items: 見積書・請求書の明細。price は単価（円・数値のみ）。taxRate は 10 / 8 / 0(対象外)。items を返すと明細は全置き換えになる
+- 金額が「税込」と明示されたら taxMode="incl"、税別または不明なら "excl"
+- withholding: 源泉徴収表示。個人名義の請求書で指示があった時だけ true
+- 領収書: rAmount=税込金額, rTadashi=但し書き（「〜として」で終える）, rMethod=受領方法
+- 契約書: subject=業務内容, cAmount=契約金額（税別・数値）, cDate=締結日。契約書の条文本文はチャットからは変更できない
+- 出張報告: travelDestination=出張先、travelPurpose=業務目的・面談相手、travelStart/travelEnd=日付、travelLodgingType=宿泊方法、travelLodgingPlace=宿泊先。実家・親族宅または知人宅は宿泊費0円で領収書不要
+- travelExpenses は交通費・宿泊費・会議費・交際費等の明細。電車・地下鉄・バスは区間、日付、金額を入れる。打ち合わせ飲食は note に「参加者：○○／関係：○○／目的：○○」を必ず含める
+- travelActivities/outcomes/issues/nextActions はユーザーが述べた事実だけを整理し、不明な成果を創作しない
+- clientName に敬称は含めない。敬称は honorific（会社=御中, 個人=様, 敬称不要=なし）
+- clientEmail は書類送付先のメールアドレス、mailCc はCC。指示または添付資料に記載がある場合に設定する
+- 添付ファイル（画像・PDF・テキスト）が来たら、その内容から宛名・住所・件名・明細・金額・日付などを読み取って updates に反映する。読み取れた内容の要約と不明点を reply に書く
+現在の書類の状態: ${JSON.stringify(cur)}`;
+}
+
+function addMsg(cls, text){
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.textContent = text;
+  chatLog.appendChild(d);
+  chatLog.scrollTop = chatLog.scrollHeight;
+  return d;
+}
+
+function applyUpdates(u){
+  if (!u) return false;
+  let changed = false;
+  if (u.honorific === 'なし') u.honorific = '';
+  if (u.type && TYPE_INFO[u.type] && u.type !== state.type) {
+    state.type = u.type;
+    if (!state.docNo || state.docNo[0] !== TYPE_INFO[u.type].prefix) state.docNo = genDocNo(u.type);
+    changed = true;
+  }
+  if (u.issuer && profiles[u.issuer]) { state.issuer = u.issuer; $('#issuer-select').value = u.issuer; changed = true; }
+  ['project','date','validUntil','dueDate','clientName','honorific','clientAddress','clientEmail','mailCc','subject','notes','taxMode','rTadashi','rMethod','cDate',
+   'travelRole','travelDestination','travelPurpose','travelStart','travelEnd','travelLodgingType','travelLodgingPlace','travelExpected','travelNotes','travelActivities','travelOutcomes','travelIssues','travelNextActions']
+    .forEach(k => { if (u[k] !== undefined && u[k] !== null && u[k] !== '') { state[k] = u[k]; changed = true; } });
+  if (u.honorific === '') { state.honorific = ''; changed = true; }
+  ['rAmount','cAmount','travelAdvance'].forEach(k => { if (typeof u[k] === 'number') { state[k] = u[k]; changed = true; } });
+  if (typeof u.withholding === 'boolean') { state.withholding = u.withholding; changed = true; }
+  if (Array.isArray(u.items) && u.items.length) {
+    state.items = u.items.map(i => ({
+      name: i.name || '', qty: (i.qty ?? 1), unit: i.unit || '式',
+      price: (i.price ?? 0), taxRate: (i.taxRate ?? 10)
+    }));
+    changed = true;
+  }
+  if (Array.isArray(u.travelExpenses) && u.travelExpenses.length) {
+    state.travelExpenses = u.travelExpenses.map(x => ({
+      date:x.date||state.travelStart||today(), category:x.category||'交通費', from:x.from||'', to:x.to||'',
+      transport:x.transport||'その他', payment:x.payment||'個人立替', receipt:x.receipt||'', amount:x.amount??0, note:x.note||''
+    }));
+    changed = true;
+  }
+  $$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.type === state.type));
+  saveDraft(); renderForm(); renderPreview();
+  return changed;
+}
+
+async function sendChat(){
+  const text = chatInput.value.trim();
+  if ((!text && !pendingFiles.length) || chatSend.disabled) return;
+  const key = getGeminiKey();
+  // 鍵が無くても、道順5で繋いだ接続先（Claude Code などのCLI）があればそちらへ流す
+  if (!key) {
+    if (window.AI_PROVIDER && window.AI_PROVIDER !== 'gemini') { return sendChatViaBridge(text); }
+    addMsg('ai err', 'AI に繋がっていません。画面右下の道順5で接続先を選ぶか、⚙設定にGeminiのキーを入れてください。');
+    return;
+  }
+  chatInput.value = '';
+  const fileNote = pendingFiles.length ? `［添付: ${pendingFiles.map(f => f.name).join('、')}］` : '';
+  addMsg('user', (fileNote ? fileNote + '\n' : '') + text);
+  const sendParts = pendingFiles.map(f => ({ inline_data: { mime_type: f.mime, data: f.b64 } }));
+  sendParts.push({ text: text || '添付ファイルの内容から、この書類に入れられる情報を読み取って設定してください。' });
+  chatHistory.push({ role: 'user', parts: [{ text: (fileNote ? fileNote + ' ' : '') + (text || '（添付ファイルの読み取り依頼）') }] });
+  pendingFiles = []; renderFileChips();
+  const contents = chatHistory.slice(-12);
+  contents[contents.length - 1] = { role: 'user', parts: sendParts };
+  const wait = addMsg('ai wait', '考え中…');
+  chatSend.disabled = true;
+  try {
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(key)}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system_instruction: { parts: [{ text: sysPrompt() }] },
+        contents,
+        generationConfig: { response_mime_type: 'application/json', response_schema: RESPONSE_SCHEMA }
+      })
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error('HTTP ' + res.status + '：' + errText.slice(0, 180));
+    }
+    const data = await res.json();
+    const raw = data.candidates && data.candidates[0] && data.candidates[0].content
+      && data.candidates[0].content.parts && data.candidates[0].content.parts[0]
+      ? data.candidates[0].content.parts[0].text : '';
+    const parsed = JSON.parse(raw);
+    chatHistory.push({ role: 'model', parts: [{ text: raw }] });
+    applyUpdates(parsed.updates);
+    const questions = Array.isArray(parsed.questions) ? parsed.questions.filter(Boolean).slice(0,3) : [];
+    wait.textContent = (parsed.reply || '反映しました。') + (questions.length ? '\n\n確認したいこと：\n' + questions.map((q,i) => `${i+1}. ${q}`).join('\n') : '');
+    wait.className = 'msg ai';
+    chatInput.placeholder = parsed.needsClarification
+      ? '上の質問に分かる範囲で回答してください（Enterで送信）'
+      : '追加・修正の指示を入力してください（Enterで送信）';
+  } catch (err) {
+    wait.textContent = 'エラー：' + err.message + '\n（通信環境とAPIキーを確認してください）';
+    wait.className = 'msg ai err';
+  } finally {
+    chatSend.disabled = false;
+    chatInput.focus();
+  }
+}
+chatSend.addEventListener('click', sendChat);
+chatInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+/* ========== ファイル添付 ========== */
+const fileInput = $('#chat-file-input'), attachBtn = $('#chat-attach'), chipsEl = $('#chat-files');
+let pendingFiles = [];
+const EXT_MIME = { png:'image/png', jpg:'image/jpeg', jpeg:'image/jpeg', webp:'image/webp', gif:'image/gif', pdf:'application/pdf', txt:'text/plain', md:'text/plain', csv:'text/plain' };
+attachBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', async () => {
+  for (const f of Array.from(fileInput.files)) {
+    const ext = f.name.split('.').pop().toLowerCase();
+    let mime = f.type || EXT_MIME[ext] || '';
+    if (mime.startsWith('text/')) mime = 'text/plain';
+    if (!(mime.startsWith('image/') || mime === 'application/pdf' || mime === 'text/plain')) {
+      addMsg('ai err', `「${f.name}」は未対応の形式です（画像・PDF・テキストのみ）。WordやExcelは一度PDFにして添付してください。`);
+      continue;
+    }
+    if (f.size > 15 * 1024 * 1024) {
+      addMsg('ai err', `「${f.name}」は大きすぎます（15MBまで）。`);
+      continue;
+    }
+    const b64 = await new Promise(r => {
+      const fr = new FileReader();
+      fr.onload = () => r(String(fr.result).split(',')[1]);
+      fr.readAsDataURL(f);
+    });
+    pendingFiles.push({ name: f.name, mime, b64 });
+  }
+  fileInput.value = '';
+  renderFileChips();
+});
+function renderFileChips(){
+  chipsEl.innerHTML = pendingFiles.map((f, i) =>
+    `<span class="fchip">📄 ${esc(f.name)}<button data-fdel="${i}" title="外す">✕</button></span>`).join('');
+  chipsEl.style.display = pendingFiles.length ? 'flex' : 'none';
+}
+chipsEl.addEventListener('click', e => {
+  if (e.target.dataset.fdel !== undefined) {
+    pendingFiles.splice(+e.target.dataset.fdel, 1);
+    renderFileChips();
+  }
+});
+
+/* ========== 音声入力 ========== */
+const micBtn = $('#chat-mic');
+let sr = null, voiceActive = false, rec = null, recChunks = [];
+function micUI(on){ micBtn.classList.toggle('rec', on); micBtn.textContent = on ? '⏹' : '🎤'; }
+
+micBtn.addEventListener('click', () => {
+  if (voiceActive) { stopVoice(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (SR) startSR(SR); else startRec();
+});
+function stopVoice(){
+  voiceActive = false;
+  if (sr) { try { sr.stop(); } catch(e){} sr = null; }
+  if (rec && rec.state === 'recording') rec.stop();
+  micUI(false);
+}
+function startSR(SR){
+  sr = new SR();
+  sr.lang = 'ja-JP'; sr.interimResults = true; sr.continuous = true;
+  const baseText = chatInput.value;
+  let finalText = '';
+  voiceActive = true; micUI(true);
+  sr.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalText += e.results[i][0].transcript;
+      else interim += e.results[i][0].transcript;
+    }
+    chatInput.value = baseText + finalText + interim;
+  };
+  sr.onerror = e => {
+    sr = null; voiceActive = false; micUI(false);
+    if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+      addMsg('ai err', 'マイクの使用が許可されていません。ウィンドウ上部の権限表示から「マイク: 許可」にしてください。');
+    } else {
+      startRec();  // network 等はGemini文字起こしにフォールバック
+    }
+  };
+  sr.onend = () => { if (voiceActive) { voiceActive = false; micUI(false); } };
+  sr.start();
+}
+async function startRec(){
+  if (!getGeminiKey()) { addMsg('ai err', '音声入力にはGemini APIキーが必要です（⚙設定）。'); return; }
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    recChunks = [];
+    rec = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+    rec.ondataavailable = e => recChunks.push(e.data);
+    rec.onstop = async () => {
+      stream.getTracks().forEach(t => t.stop());
+      voiceActive = false; micUI(false);
+      const blob = new Blob(recChunks, { type: 'audio/webm' });
+      if (blob.size < 1000) return;
+      const b64 = await new Promise(r => {
+        const fr = new FileReader();
+        fr.onload = () => r(String(fr.result).split(',')[1]);
+        fr.readAsDataURL(blob);
+      });
+      const wait = addMsg('ai wait', '文字起こし中…');
+      try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${encodeURIComponent(getGeminiKey())}`, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contents: [{ parts: [
+            { text: 'この音声を日本語で文字起こしして、文字起こし本文だけを返してください。' },
+            { inline_data: { mime_type: 'audio/webm', data: b64 } }
+          ] }] })
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+        const t = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+        wait.remove();
+        if (t) chatInput.value = (chatInput.value ? chatInput.value + ' ' : '') + t;
+        chatInput.focus();
+      } catch(err) {
+        wait.textContent = '文字起こしエラー：' + err.message;
+        wait.className = 'msg ai err';
+      }
+    };
+    rec.start();
+    voiceActive = true; micUI(true);
+  } catch(err) {
+    addMsg('ai err', 'マイクにアクセスできません：' + err.message);
+  }
+}
+
+/* ========== フォルダ保存（PDF + データ） ========== */
+function sanitizeName(s){ return String(s || '').replace(/[\\/:*?"<>|]/g, '_').trim() || '未分類'; }
+function idbOpen(){
+  return new Promise((res, rej) => {
+    const r = indexedDB.open('papermaker-fs', 1);
+    r.onupgradeneeded = () => r.result.createObjectStore('handles');
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function idbPut(k, v){
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const tx = db.transaction('handles', 'readwrite');
+    tx.objectStore('handles').put(v, k);
+    tx.oncomplete = res; tx.onerror = () => rej(tx.error);
+  });
+}
+async function idbGet(k){
+  const db = await idbOpen();
+  return new Promise((res, rej) => {
+    const g = db.transaction('handles', 'readonly').objectStore('handles').get(k);
+    g.onsuccess = () => res(g.result); g.onerror = () => rej(g.error);
+  });
+}
+async function getBaseDir(){
+  let h = await idbGet('base').catch(() => null);
+  if (h) {
+    let p = await h.queryPermission({ mode: 'readwrite' });
+    if (p !== 'granted') p = await h.requestPermission({ mode: 'readwrite' });
+    if (p === 'granted') return h;
+  }
+  alert('最初の1回だけ保存先の親フォルダを選びます。\n書類を保存したいフォルダを選んでください。');
+  h = await showDirectoryPicker({ id: 'papermaker-base', mode: 'readwrite', startIn: 'documents' });
+  await idbPut('base', h);
+  return h;
+}
+function pdfOpt(fname){
+  return {
+    margin: 0, filename: fname + '.pdf',
+    image: { type: 'jpeg', quality: 0.95 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'] }
+  };
+}
+async function writeFile(dir, name, blob){
+  const fh = await dir.getFileHandle(name, { create: true });
+  const w = await fh.createWritable();
+  await w.write(blob); await w.close();
+}
+async function savePdfToFolder(){
+  const wasEditing = editing;
+  if (editing) $('#edit-toggle').click();
+  const fileTarget = state.type === 'travel' ? (state.travelDestination || '出張先なし') : (state.clientName || '宛名なし');
+  const fname = sanitizeName(`${TYPE_INFO[state.type].title}_${fileTarget}_${state.docNo}`);
+  const btn = $('#btn-savepdf');
+  btn.disabled = true; btn.textContent = '⏳ 変換中…';
+  try {
+    if (!window.showDirectoryPicker) {
+      await html2pdf().set(pdfOpt(fname)).from($('#sheet')).save();
+      alert('この環境ではフォルダ直接保存が使えないため、ダウンロードとして保存しました。');
+      return;
+    }
+    const base = await getBaseDir();
+    const proj = sanitizeName(state.project);
+    const dir = await base.getDirectoryHandle(proj, { create: true });
+    const pdfBlob = await html2pdf().set(pdfOpt(fname)).from($('#sheet')).outputPdf('blob');
+    await writeFile(dir, fname + '.pdf', pdfBlob);
+    await writeFile(dir, fname + '.json', new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' }));
+    alert(`保存しました：\n${base.name}\\${proj}\\${fname}.pdf\n（再編集用の .json も同じ場所に保存）`);
+  } catch(err) {
+    if (err.name !== 'AbortError') alert('保存エラー：' + err.message);
+  } finally {
+    btn.disabled = false; btn.textContent = '📁 PDFで保存';
+    if (wasEditing) $('#edit-toggle').click();
+  }
+}
+$('#btn-savepdf').addEventListener('click', savePdfToFolder);
+
+/* ===== Gmailの下書きに、PDFごと置く ===== */
+function mailFileName(){
+  const target = state.type === 'travel' ? (state.travelDestination || '出張先なし') : (state.clientName || '宛名なし');
+  return sanitizeName(`${TYPE_INFO[state.type].title}_${target}_${state.docNo}`) + '.pdf';
+}
+async function pdfAsBase64(){
+  const wasEditing = editing;
+  if (editing) $('#edit-toggle').click();
+  try {
+    const blob = await html2pdf().set(pdfOpt(mailFileName())).from($('#sheet')).outputPdf('blob');
+    return await new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(String(r.result).split(',')[1]);
+      r.onerror = rej;
+      r.readAsDataURL(blob);
+    });
+  } finally { if (wasEditing) $('#edit-toggle').click(); }
+}
+async function postMail(body){
+  const r = await fetch('/api/mail', { method:'POST', headers:{'Content-Type':'application/json'},
+                                       body: JSON.stringify(body) });
+  return await r.json();
+}
+const mailSay = (t, bad) => { const b = $('#mail-result');
+  if (b) b.innerHTML = '<span style="color:' + (bad ? '#c33' : '#2a7') + '">' + t + '</span>'; };
+
+const btnDraft = $('#btn-mail-draft');
+if (btnDraft) btnDraft.addEventListener('click', async () => {
+  const to = $('#mail-to').value.trim();
+  if (!to) { mailSay('宛先を入れてください', true); return; }
+  btnDraft.disabled = true; btnDraft.textContent = '置いています…';
+  try {
+    const data = await pdfAsBase64();
+    const r = await postMail({ to: to, cc: $('#mail-cc').value.trim(),
+      subject: $('#mail-subject').value, body: $('#mail-body').value,
+      attachments: [{ name: mailFileName(), data: data }] });
+    if (r.error) mailSay(r.error, true);
+    else mailSay('下書きに置きました（' + (r.draft.attached || []).join('／') + '）。Gmailを開いて、中身を見てから送ってください。');
+  } catch (e) { mailSay('うまくいきませんでした: ' + e.message, true); }
+  finally { btnDraft.disabled = false; btnDraft.textContent = 'PDFごと下書きに置く'; }
+});
+
+const btnMailSave = $('#btn-mail-save');
+if (btnMailSave) btnMailSave.addEventListener('click', async () => {
+  btnMailSave.disabled = true; btnMailSave.textContent = '試しています…';
+  const r = await postMail({ address: $('#mail-user').value.trim(),
+                             appPassword: $('#mail-pass').value.trim(), save: true });
+  mailSay(r.message || r.error || '', !r.ok);
+  if (r.ok) $('#mail-pass').value = '';
+  btnMailSave.disabled = false; btnMailSave.textContent = '保存して試す';
+});
+/* ===== 一度使った宛先を出す ===== */
+function fillAddresses(){
+  return fetch('/api/addresses').then(r => r.json()).then(a => {
+    const rows = (a && a.items) || [];
+    const dl = $('#addr-list');
+    if (dl) dl.innerHTML = rows.map(x =>
+      `<option value="${x.email}">${x.name ? x.name + '（' + x.source + '）' : x.source}</option>`).join('');
+    const box = $('#addr-chips');
+    if (box) box.innerHTML = rows.slice(0, 6).map(x =>
+      `<button type="button" class="addr-chip" data-m="${x.email}"
+         style="border:1px solid #d5d5d8;background:#fff;border-radius:12px;padding:2px 9px;margin:2px 4px 2px 0;cursor:pointer;font-size:11px">
+         ${x.name || x.email}</button>`).join('')
+      + (rows.length ? '' : '<span style="color:#888">まだ宛先の控えがありません</span>');
+    if (box) box.querySelectorAll('.addr-chip').forEach(b => {
+      b.onclick = () => { $('#mail-to').value = b.dataset.m; };
+    });
+    return rows;
+  }).catch(() => []);
+}
+fetch('/api/mail/check').then(r => r.json()).then(m => {
+  if (m && m.hasUser && $('#mail-user')) $('#mail-user').placeholder = '登録済み（変える時だけ入力）';
+}).catch(() => {});
+$('#btn-reset-folder').addEventListener('click', async () => {
+  await idbPut('base', null);
+  alert('リセットしました。次回「📁 PDFで保存」時にフォルダを選び直します。');
+});
+
+/* ========== URL経由の読み込み（Claude Code連携） ========== */
+(function(){
+  const m = location.hash.match(/#doc=([^&]+)/);
+  if (!m) return;
+  try {
+    const payload = JSON.parse(decodeURIComponent(escape(atob(decodeURIComponent(m[1])))));
+    const doc = payload.doc || payload;
+    if (payload.profiles) profiles = Object.assign({}, profiles, payload.profiles);
+    if (payload.travel) applyTravelConfig(payload.travel);
+    state = Object.assign(newDoc(doc.type || 'invoice'), doc);
+    saveDraft();
+    history.replaceState(null, '', location.pathname);
+  } catch(e) { console.error('hash doc load failed:', e); }
+})();
+
+/* ========== 初期化 ========== */
+$('#issuer-select').value = state.issuer;
+$$('#tabs button').forEach(b => b.classList.toggle('active', b.dataset.type === state.type));
+renderForm();
+renderPreview();
+})();
+/* ===== 定期送付タブ =====
+   台帳（recurring-invoices/clients.json）の読み書き。
+   file:// で開いているときは橋渡し（tools/bridge.py）が居ないので案内だけ出す。 */
+(function(){
+  const $ = s => document.querySelector(s);   // 本体のIIFEの外なので自前で持つ
+  const API = '/api/clients';
+  const bridged = location.protocol.startsWith('http');
+  let ledger = { clients: [] };
+  let rooms = null;          // Chatworkルーム一覧（取れたときだけ）
+
+  const ISSUE = [['eom','月末'],['5','毎月5日'],['10','毎月10日'],['15','毎月15日'],['20','毎月20日'],['25','毎月25日']];
+  const DUE = [['eom','当月末'],['nm10','翌月10日'],['nm25','翌月25日'],['eonm','翌月末'],['+30','発行から30日']];
+  const esc2 = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+
+  function nextIssue(c){
+    const now = new Date();
+    const last = new Date(now.getFullYear(), now.getMonth()+1, 0).getDate();
+    const day = (c.issueDay === 'eom') ? last : parseInt(c.issueDay||0,10);
+    if (!day) return '発行日が未設定';
+    let d = new Date(now.getFullYear(), now.getMonth(), Math.min(day,last));
+    if (d < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
+      const lm = new Date(now.getFullYear(), now.getMonth()+2, 0).getDate();
+      d = new Date(now.getFullYear(), now.getMonth()+1, c.issueDay==='eom' ? lm : Math.min(day,lm));
+    }
+    return `次は ${d.getMonth()+1}月${d.getDate()}日`;
+  }
+
+  const total = c => (c.items||[]).reduce((t,i)=> t + (+i.qty||0)*(+i.price||0), 0);
+
+  function destField(c){
+    if (c.channel === 'chatwork' && rooms) {
+      const opts = rooms.map(r => `<option value="${esc2(r.id)}" ${String(c.chatworkRoomId)===String(r.id)?'selected':''}>${esc2(r.name)}</option>`).join('');
+      return `<select class="dest"><option value="">（選ぶ）</option>${opts}</select>`;
+    }
+    const v = c.channel === 'chatwork' ? (c.chatworkRoomId||'') : (c.to||'');
+    const ph = c.channel === 'chatwork' ? 'ルームID' : 'メールアドレス';
+    return `<input class="dest" value="${esc2(v)}" placeholder="${ph}">`;
+  }
+
+  function itemRows(c){
+    return (c.items||[]).map((it, n) => `
+      <div class="rc-item">
+        <input data-it="${n}" data-k="name" value="${esc2(it.name)}" placeholder="品目">
+        <input data-it="${n}" data-k="qty" type="number" value="${it.qty ?? 1}" title="数量">
+        <input data-it="${n}" data-k="unit" value="${esc2(it.unit || '式')}" title="単位">
+        <input data-it="${n}" data-k="price" type="number" value="${it.price ?? 0}" title="単価">
+        <button type="button" data-itdel="${n}" title="この行を消す">✕</button>
+      </div>`).join('');
+  }
+
+  function card(c, i){
+    const el = document.createElement('div');
+    el.className = 'rc-card' + (c.enabled ? '' : ' off');
+    el.innerHTML = `
+      <div class="rc-head">
+        <input type="checkbox" data-f="enabled" ${c.enabled?'checked':''} title="外すと今月は作らない">
+        <span class="rc-name">${esc2(c.clientName) || '（宛名未設定）'}${esc2(c.honorific)}</span>
+        <button type="button" class="rc-run" data-run>今月分を作る</button>
+        <button class="rc-del" data-del>削除</button>
+      </div>
+      <div class="rc-grid">
+        <label>宛名</label><input data-f="clientName" value="${esc2(c.clientName)}">
+        <label>敬称</label><select data-f="honorific"><option ${c.honorific==='御中'?'selected':''}>御中</option><option ${c.honorific==='様'?'selected':''}>様</option></select>
+        <label>相手先住所</label><input class="wide" data-f="clientAddress" value="${esc2(c.clientAddress)}" placeholder="空欄でも作れる">
+        <label>名義</label><select data-f="issuer"><option value="corp" ${c.issuer==='corp'?'selected':''}>会社名義</option><option value="personal" ${c.issuer==='personal'?'selected':''}>個人名義</option></select>
+        <label>案件名</label><input data-f="project" value="${esc2(c.project)}" title="保存フォルダの名前になる">
+        <label>件名</label><input class="wide" data-f="subject" value="${esc2(c.subject)}" placeholder="請求書に載る件名">
+        <label>明細</label><div class="wide">${itemRows(c)}<button type="button" class="rc-additem">＋ 行を足す</button></div>
+        <label>税</label><select data-f="taxMode"><option value="incl" ${c.taxMode!=='excl'?'selected':''}>税込で入力</option><option value="excl" ${c.taxMode==='excl'?'selected':''}>税別で入力</option></select>
+        <label>源泉徴収</label><label class="rc-chk"><input type="checkbox" data-f="withholding" ${c.withholding?'checked':''}> 個人名義で10.21%を引く</label>
+        <label>発行日</label><select data-f="issueDay">${ISSUE.map(([v,t])=>`<option value="${v}" ${String(c.issueDay)===v?'selected':''}>${t}</option>`).join('')}</select>
+        <label>支払期限</label><select data-f="dueRule">${DUE.map(([v,t])=>`<option value="${v}" ${c.dueRule===v?'selected':''}>${t}</option>`).join('')}</select>
+        <label>送り方</label><select data-f="channel"><option value="chatwork" ${c.channel==='chatwork'?'selected':''}>Chatwork</option><option value="gmail" ${c.channel!=='chatwork'?'selected':''}>Gmail</option></select>
+        <label>送り先</label>${destField(c)}
+        <label>備考</label><input class="wide" data-f="notes" value="${esc2(c.notes)}" placeholder="請求書に載る備考">
+        <label>送信文</label><textarea class="wide" data-f="mailBody" rows="2" placeholder="空なら毎回その場で書く">${esc2(c.mailBody)}</textarea>
+      </div>
+      <div class="rc-next">${nextIssue(c)}／今の金額 ${total(c).toLocaleString()}円（${c.taxMode==='excl'?'税別':'税込'}）</div>`;
+
+    el.querySelectorAll('[data-f]').forEach(inp => inp.addEventListener('change', () => {
+      ledger.clients[i][inp.dataset.f] = (inp.type === 'checkbox') ? inp.checked : inp.value;
+      render();
+    }));
+    el.querySelectorAll('[data-it]').forEach(inp => inp.addEventListener('change', () => {
+      const it = ledger.clients[i].items[+inp.dataset.it];
+      it[inp.dataset.k] = inp.type === 'number' ? +inp.value : inp.value;
+      if (it.taxRate == null) it.taxRate = 10;
+      render();
+    }));
+    el.querySelectorAll('[data-itdel]').forEach(b => b.addEventListener('click', () => {
+      ledger.clients[i].items.splice(+b.dataset.itdel, 1); render();
+    }));
+    el.querySelector('.rc-additem').addEventListener('click', () => {
+      ledger.clients[i].items = ledger.clients[i].items || [];
+      ledger.clients[i].items.push({name:'', qty:1, unit:'式', price:0, taxRate:10}); render();
+    });
+    el.querySelector('.dest').addEventListener('change', e => {
+      const c2 = ledger.clients[i];
+      if (c2.channel === 'chatwork') c2.chatworkRoomId = e.target.value; else c2.to = e.target.value;
+    });
+    el.querySelector('[data-del]').addEventListener('click', () => {
+      if (!confirm(`${c.clientName||'この請求先'} を台帳から消します。よろしいですか`)) return;
+      ledger.clients.splice(i,1); render();
+    });
+    el.querySelector('[data-run]').addEventListener('click', async ev => {
+      const b = ev.currentTarget;
+      b.disabled = true; b.textContent = '作成中…';
+      try {
+        await save(true);
+        const r = await fetch('/api/run', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({id: c.id})});
+        const j = await r.json();
+        const res = (j.results||[])[0];
+        if (res && res.status === 'ok') b.textContent = 'できた（PDFを開いた）';
+        else if (res) b.textContent = '足りない：' + (res.missing||[]).join('・');
+        else b.textContent = j.error || '作れなかった';
+      } catch(e) { b.textContent = '作れなかった：' + e; }
+      setTimeout(()=>{ b.disabled = false; b.textContent = '今月分を作る'; }, 3000);
+    });
+    return el;
+  }
+
+  function render(){
+    const list = $('#rc-list'); list.innerHTML = '';
+    (ledger.clients||[]).forEach((c,i) => list.appendChild(card(c,i)));
+    if (!ledger.clients || !ledger.clients.length) list.innerHTML = '<div class="rc-next">まだ1件も登録されていません。</div>';
+  }
+
+  async function loadRooms(){
+    try {
+      const r = await fetch('/api/chatwork/rooms');
+      const j = await r.json();
+      rooms = j.rooms || null;
+      $('#rc-cw').textContent = rooms ? `Chatwork：${rooms.length}件のルームから選べます` : ('Chatwork：' + (j.error||'つながっていません'));
+    } catch(e) { rooms = null; $('#rc-cw').textContent = 'Chatwork：つながっていません'; }
+  }
+
+  async function load(){
+    if (!bridged) {
+      $('#rc-note').textContent = 'ファイルを直接開いているので台帳を読めません。デスクトップの「書類メーカー.command」から開くと編集できます。';
+      ledger = { clients: [] }; render(); return;
+    }
+    try {
+      ledger = await (await fetch(API, {cache:'no-store'})).json();
+      $('#rc-note').textContent = 'ここに載っている先へ毎月請求書を作ります。チェックを外した先はその月だけ止まります。送信は毎回確認してから行います。';
+    } catch(e) {
+      $('#rc-note').textContent = '台帳を読めませんでした：' + e;
+      ledger = { clients: [] };
+    }
+    render();
+    const st = await (await fetch('/api/chatwork/status')).json().catch(()=>({}));
+    if (st.hasToken) loadRooms(); else $('#rc-cw').textContent = 'Chatwork：APIトークン未登録（下の欄に貼ると送れるようになる）';
+  }
+
+  $('#tab-recurring').addEventListener('click', () => { $('#recurring-modal').classList.add('show'); load(); });
+  $('#rc-reload').addEventListener('click', load);
+
+  $('#rc-token-save').addEventListener('click', async () => {
+    const t = $('#rc-token').value.trim();
+    if (!t) return;
+    const b = $('#rc-token-save'); b.disabled = true;
+    const j = await (await fetch('/api/chatwork/token', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token:t})})).json();
+    $('#rc-token').value = '';
+    b.disabled = false;
+    if (j.ok) { await loadRooms(); render(); } else { $('#rc-cw').textContent = 'Chatwork：' + (j.error||'登録できず'); }
+  });
+
+  $('#rc-add').addEventListener('click', () => {
+    ledger.clients = ledger.clients || [];
+    ledger.clients.push({
+      id: 'c' + Date.now().toString(36), enabled: true, issueDay: 'eom', issuer: 'corp',
+      project: '', clientName: '', honorific: '御中', clientAddress: '', channel: 'chatwork',
+      to: '', cc: '', chatworkRoomId: '', subject: '',
+      items: [{name:'', qty:1, unit:'式', price:0, taxRate:10}],
+      taxMode: 'incl', withholding: false, notes: '', dueRule: 'nm10', mailBody: ''
+    });
+    render();
+    $('#rc-list').lastElementChild.scrollIntoView({block:'center'});
+  });
+
+  async function save(quiet){
+    if (!bridged) { if(!quiet) alert('橋渡し経由で開いていないため保存できません'); return; }
+    const r = await fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(ledger)});
+    return r.json();
+  }
+
+  $('#rc-save').addEventListener('click', async () => {
+    const btn = $('#rc-save'); btn.disabled = true; btn.textContent = '保存中…';
+    try {
+      const j = await save();
+      btn.textContent = j && j.ok ? `保存した（${j.count}件）` : ('保存できず：' + ((j&&j.error)||''));
+    } catch(e) { btn.textContent = '保存できず：' + e; }
+    setTimeout(() => { btn.disabled = false; btn.textContent = '保存する'; }, 2000);
+  });
+})();
+
+</script>
+<script src="quest.js"></script>
+<script src="nittei.js"></script>
+<script src="filedrop.js" defer></script>
+</body>
+</html>

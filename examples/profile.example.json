@@ -1,0 +1,63 @@
+{
+  "_note": "初回の paper-maker init でこの形のファイルが ~/.paper-maker/profile.json に作られる。値はぜんぶ見本。",
+  "profiles": {
+    "corp": {
+      "name": "株式会社サンプル",
+      "rep": "代表取締役　山田 太郎",
+      "address": "東京都千代田区丸の内1-1-1",
+      "tel": "03-0000-0000",
+      "email": "info@example.com",
+      "invoiceNo": "",
+      "bank": "サンプル銀行（0000） 本店（001）\n普通 0000000\nカ）サンプル",
+      "sealText": "株式会社サンプル之印",
+      "sealType": "square"
+    },
+    "personal": {
+      "name": "山田 太郎",
+      "rep": "",
+      "address": "東京都千代田区丸の内1-1-1",
+      "tel": "090-0000-0000",
+      "email": "",
+      "invoiceNo": "",
+      "bank": "",
+      "sealText": "山田",
+      "sealType": "round"
+    }
+  },
+  "defaultIssuer": "corp",
+  "travel": {
+    "role": "代表取締役",
+    "rates": {
+      "代表取締役": {"day": 5000, "night": 10000},
+      "取締役":     {"day": 4000, "night": 8000},
+      "従業員":     {"day": 3000, "night": 6000}
+    },
+    "lodging": {"mode": "actual_capped", "cap": 12000},
+    "currentBase": "hq",
+    "bases": {
+      "hq": {"label": "本店", "address": "東京都千代田区丸の内1-1-1", "station": "東京"}
+    },
+    "hubs": ["東京"],
+    "settleWithinDays": 7,
+    "receiptFreeUnder": 30000,
+    "effectiveDate": "2026-09-01"
+  },
+  "calendar": {
+    "sources": [
+      {"type": "ics", "path": "calendar.ics", "name": "仕事"}
+    ],
+    "skipCalendars": ["日本の祝日", "誕生日", "日時設定ありリマインダー", "Siriからの提案"],
+    "timezone": "Asia/Tokyo"
+  },
+  "report": {
+    "skipEmptyDays": true,
+    "fromCalendarNote": true,
+    "useAi": true,
+    "author": "山田 太郎"
+  },
+  "output": {
+    "dir": "~/Documents/書類メーカー",
+    "obsidianDir": ""
+  },
+  "browser": ""
+}

@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>電子取引データの訂正及び削除の防止に関する事務処理規程</title>
+<style>
+@page{size:A4;margin:0}
+body{margin:0;background:#fff;font-family:"Hiragino Mincho ProN","Yu Mincho","游明朝",serif;color:#111}
+.sheet{width:210mm;box-sizing:border-box;padding:18mm 20mm 14mm;font-size:11.5px;line-height:1.8}
+.title{font-size:17px;letter-spacing:.15em;text-align:center;margin:0 0 2mm;font-weight:600}
+.sub{text-align:center;font-size:11px;margin-bottom:6mm;color:#333}
+h2{font-size:12.5px;margin:5mm 0 1mm;font-weight:600;text-align:center;letter-spacing:.2em}
+h3{font-size:11.5px;margin:3.5mm 0 0.5mm;font-weight:600}
+p{margin:0 0 1mm;text-indent:1em}
+ol{margin:0 0 1mm 2em;padding:0}
+li{margin:0}
+.attn{border:1px solid #999;padding:1.5mm 3mm;font-size:9.5px;color:#444;margin-top:6mm;font-family:"Hiragino Kaku Gothic ProN",sans-serif;text-indent:0}
+.rev{margin-top:5mm;font-size:10.5px;text-indent:0}
+</style></head><body><div class="sheet">
+<div class="title">電子取引データの訂正及び削除の防止に関する事務処理規程</div>
+<div class="sub">{{company}}</div>
+
+<h2>第１章　総則</h2>
+<h3>（目的）</h3>
+<p>第１条　この規程は、電子計算機を使用して作成する国税関係帳簿書類の保存方法の特例に関する法律第７条に定められた電子取引の取引情報に係る電磁的記録の保存義務を履行するため、{{company}}において行った電子取引の取引情報に係る電磁的記録を適正に保存するために必要な事項を定め、これに基づき保存することを目的とする。</p>
+<h3>（適用範囲）</h3>
+<p>第２条　この規程は、{{company}}の全ての役員及び従業員（契約社員、パートタイマー及び派遣社員を含む。以下同じ。）に対して適用する。</p>
+<h3>（管理責任者）</h3>
+<p>第３条　この規程の管理責任者は、{{manager}}とする。</p>
+
+<h2>第２章　電子取引データの取扱い</h2>
+<h3>（電子取引の範囲）</h3>
+<p>第４条　{{company}}における電子取引の範囲は以下に掲げる取引とする。</p>
+{{{scope_rows}}}
+<h3>（取引データの保存）</h3>
+<p>第５条　取引先から受領した取引関係情報及び取引相手に提供した取引関係情報のうち、第６条に定めるデータについては、{{store_place}}に{{keep_years}}年間保存する。</p>
+<h3>（対象となるデータ）</h3>
+<p>第６条　保存する取引関係情報は以下のとおりとする。</p>
+<ol>
+<li>一　見積依頼情報</li>
+<li>二　見積回答情報</li>
+<li>三　確定注文情報</li>
+<li>四　注文請け情報</li>
+<li>五　納品情報</li>
+<li>六　支払情報</li>
+<li>七　インターネットバンキングの入出金情報</li>
+</ol>
+<h3>（運用体制）</h3>
+<p>第７条　保存する取引関係情報の管理責任者及び処理責任者は以下のとおりとする。</p>
+<ol>
+<li>一　管理責任者　{{manager}}</li>
+<li>二　処理責任者　{{handler}}</li>
+</ol>
+<h3>（訂正削除の原則禁止）</h3>
+<p>第８条　保存する取引関係情報の内容について、訂正及び削除をすることは原則禁止とする。</p>
+<h3>（訂正削除を行う場合）</h3>
+<p>第９条　業務処理上やむを得ない理由によって保存する取引関係情報を訂正または削除する場合は、処理責任者は「取引情報訂正・削除申請書」に以下の内容を記載の上、管理責任者へ提出すること。</p>
+<ol>
+<li>一　申請日</li>
+<li>二　取引伝票番号</li>
+<li>三　取引件名</li>
+<li>四　取引先名</li>
+<li>五　訂正・削除日付</li>
+<li>六　訂正・削除内容</li>
+<li>七　訂正・削除理由</li>
+<li>八　処理担当者名</li>
+</ol>
+<p>２　管理責任者は、「取引情報訂正・削除申請書」の提出を受けた場合は、正当な理由があると認める場合のみ承認する。</p>
+<p>３　管理責任者は、前項において承認した場合は、処理責任者に対して取引関係情報の訂正及び削除を指示する。</p>
+<p>４　処理責任者は、取引関係情報の訂正及び削除を行った場合は、当該取引関係情報に訂正・削除履歴がある旨の情報を付すとともに「取引情報訂正・削除完了報告書」を作成し、当該報告書を管理責任者に提出する。</p>
+<p>５　「取引情報訂正・削除申請書」及び「取引情報訂正・削除完了報告書」は、事後に訂正・削除履歴の確認作業が行えるよう整然とした形で、訂正・削除の対象となった取引データの保存期間が満了するまで保存する。</p>
+
+<h2>附則</h2>
+<h3>（施行）</h3>
+<p>第10条　この規程は、{{effective_ja}}から施行する。</p>
+
+<div class="rev">{{effective_ja}}　制定　{{company}}</div>
+<div class="attn">国税庁が公開している「電子取引データの訂正及び削除の防止に関する事務処理規程（法人の例）」に、社名・管理責任者・施行日を差し込んだものです。電子取引の範囲と保存場所は、実際の業務に合わせて直してください。施行する前に税理士に見せることをお勧めします。</div>
+</div></body></html>

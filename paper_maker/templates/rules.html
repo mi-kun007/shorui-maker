@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><title>旅費規程</title>
+<style>
+@page{size:A4;margin:0}
+body{margin:0;background:#fff;font-family:"Hiragino Mincho ProN","Yu Mincho","游明朝",serif;color:#111}
+.sheet{width:210mm;box-sizing:border-box;padding:18mm 20mm 14mm;font-size:11.5px;line-height:1.75}
+.title{font-size:20px;letter-spacing:.4em;text-align:center;margin:0 0 2mm;font-weight:600}
+.sub{text-align:center;font-size:11px;margin-bottom:6mm;color:#333}
+h2{font-size:12.5px;margin:4mm 0 0.5mm;font-weight:600}
+p{margin:0 0 1mm;text-indent:1em}
+table{border-collapse:collapse;font-size:11px;margin:1.5mm 0 2mm 1em}
+th,td{border:1px solid #666;padding:1mm 4mm;text-align:center}
+th{background:#f2f2f2;font-weight:600}
+.attn{border:1px solid #999;padding:1.5mm 3mm;font-size:9.5px;color:#444;margin-top:5mm;font-family:"Hiragino Kaku Gothic ProN",sans-serif}
+.rev{margin-top:4mm;font-size:10.5px}
+</style></head><body><div class="sheet">
+<div class="title">旅費規程</div>
+<div class="sub">{{company}}</div>
+
+<h2>第1条（目的）</h2>
+<p>この規程は、{{company}}（以下「会社」）の役員および従業員が業務のために出張する場合の旅費について定める。</p>
+<h2>第2条（出張の定義）</h2>
+<p>出張とは、業務のため勤務地（{{base_label}}：{{base_address}}）を離れて移動することをいう。日帰り出張と宿泊出張に分ける。</p>
+<h2>第3条（旅費の種類）</h2>
+<p>旅費は、交通費、日当、宿泊費とする。</p>
+<h2>第4条（交通費）</h2>
+<p>交通費は、最も経済的かつ合理的な経路による実費を支給する。鉄道は普通車、航空機は普通席を原則とする。</p>
+<h2>第5条（日当）</h2>
+<p>日当は次の表により支給する。日当は出張中の食費その他の諸雑費に充てるものとし、領収書は不要とする。</p>
+<table>
+<tr><th>役職</th><th>日帰り</th><th>宿泊（1泊につき）</th></tr>
+{{{rate_rows}}}
+</table>
+<h2>第6条（宿泊費）</h2>
+<p>{{lodging_sentence}}実家・知人宅等に宿泊した場合は支給しない。</p>
+<h2>第7条（仮払と精算）</h2>
+<p>出張者は事前に旅費の仮払を受けることができる。出張終了後{{settle_days}}日以内に出張報告・精算書を提出し、過不足を精算する。</p>
+<h2>第8条（証憑）</h2>
+<p>交通費・宿泊費は領収書等の証憑を添付する。ただし1件{{receipt_free}}円未満の公共交通機関の運賃は、出張報告書への区間・金額の記載をもって証憑に代えることができる。</p>
+<h2>第9条（会議費・交際費との区分）</h2>
+<p>出張中の飲食で取引先が同席した場合は旅費とせず、参加者と目的を記載のうえ会議費または交際費として処理する。</p>
+<h2>第10条（改定）</h2>
+<p>この規程の改定は、取締役会（取締役会を置かない場合は代表取締役）の決定による。</p>
+<p class="rev">附則　この規程は {{effective_ja}} から施行する。</p>
+<div class="attn">この規程は「書類メーカー」の雛形に会社の設定（役職・日当・上限）を差し込んで生成したたたき台です。施行前に税理士等の専門家に内容を確認してください。</div>
+</div></body></html>
