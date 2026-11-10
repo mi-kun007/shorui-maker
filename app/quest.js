@@ -84,7 +84,7 @@
   var st = { data: null, min: localStorage.getItem('pm_quest_min') === '1', view: null };
 
   function el(id) { return document.getElementById(id); }
-  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s == null ? '' : s; return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
   function mount() {
     var s = document.createElement('style'); s.textContent = CSS; document.head.appendChild(s);

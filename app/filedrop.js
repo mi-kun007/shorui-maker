@@ -22,7 +22,7 @@
       return (file.type || '').toLowerCase() === x;
     });
   }
-  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+  function esc(s) { var d = document.createElement('div'); d.textContent = s; return d.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function enhance(input) {
     if (!input || input.fdDone || input.hasAttribute('data-nodrop') || input.type !== 'file') return;
     input.fdDone = true;

@@ -60,6 +60,33 @@ def write_secret(key: str, value: str):
         pass
 
 
+# 画面から設定できる CLI は、AI に文章を渡す道具だけにする。
+# シェルや言語の実行役を通すと、画面に何か仕込まれた時に何でも走ってしまう。
+CLI_ALLOWED = {"claude", "codex", "gemini", "ollama", "llm", "aichat", "sgpt", "mods"}
+
+
+def _cli_command_ok(command: str):
+    import shlex as _sh
+    try:
+        parts = _sh.split(command)
+    except ValueError:
+        raise ValueError("コマンドを読めませんでした")
+    if not parts:
+        raise ValueError("走らせるコマンドを入れてください")
+    name = pathlib.Path(parts[0]).name
+    if name not in CLI_ALLOWED:
+        raise ValueError("このコマンドは使えません: %s（使えるのは %s）" % (name, "・".join(sorted(CLI_ALLOWED))))
+
+
+def _inside_data_dir(p) -> str:
+    """メールに付けるファイルは書類メーカーの置き場の中だけ。"""
+    base = paths.data_dir().resolve()
+    q = pathlib.Path(str(p)).expanduser().resolve()
+    if q != base and base not in q.parents:
+        raise ValueError("付けられないファイルです: %s" % pathlib.Path(str(p)).name)
+    return str(q)
+
+
 class Handler(http.server.SimpleHTTPRequestHandler):
     def _json(self, obj, code=200):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
@@ -244,6 +271,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     if cfg.get("style") == "cli":
                         if not cfg.get("command"):
                             raise ValueError("走らせるコマンドを入れてください（例: ollama run llama3）")
+                        _cli_command_ok(cfg["command"])
                     elif not cfg.get("endpoint"):
                         raise ValueError("繋ぎ先のURLを入れてください")
                     ai_mod.save(cfg)
@@ -317,7 +345,7 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     return self._json({"ok": ok, "message": msg})
                 import base64 as _b64
                 import tempfile as _tmp
-                files = [str(x) for x in (d.get("files") or [])]
+                files = [_inside_data_dir(x) for x in (d.get("files") or [])]
                 tmpdir = None
                 for a in (d.get("attachments") or [])[:5]:
                     raw = str(a.get("data") or "")

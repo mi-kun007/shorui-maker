@@ -481,7 +481,7 @@ const LS = 'papermaker:';
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
 const yen = n => '¥' + Math.round(n).toLocaleString('ja-JP');
-const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const today = () => new Date().toISOString().slice(0,10);
 const jd = d => { if(!d) return ''; const [y,m,dd]=d.split('-'); return `${y}年${+m}月${+dd}日`; };
 
@@ -849,7 +849,7 @@ function renderForm(){
       const rs = routesFrom(state.travelBase);
       if (rs.length) {
         h += '<h2>よく使う経路</h2>';
-        h += '<div class="travel-quick">' + rs.map(r=>`<button data-travel-route="${r.id}">${r.label}</button>`).join('') + '</div>';
+        h += '<div class="travel-quick">' + rs.map(r=>`<button data-travel-route="${esc(r.id)}">${esc(r.label)}</button>`).join('') + '</div>';
         h += '<div class="hint">押すと区間ごとの明細が入る。運賃を書き換えて保存すると、次からその額で入る。</div>';
       }
     }
@@ -1379,8 +1379,8 @@ function renderHistory(){
   $('#history-list').innerHTML = h.length ? h.map(x => `
     <div class="hist-item">
       <div class="hi-main"><div class="hi-title">${esc(x.label)}</div><div class="hi-sub">保存日: ${x.savedAt}</div></div>
-      <button class="load" data-load="${x.id}">開く</button>
-      <button class="del" data-hdel="${x.id}">削除</button>
+      <button class="load" data-load="${esc(x.id)}">開く</button>
+      <button class="del" data-hdel="${esc(x.id)}">削除</button>
     </div>`).join('') : '<p style="color:var(--sub);font-size:13px;">まだ保存された書類はありません。</p>';
 }
 $('#btn-history').addEventListener('click', () => { renderHistory(); $('#history-modal').classList.add('show'); });
@@ -1979,12 +1979,12 @@ function fillAddresses(){
     const rows = (a && a.items) || [];
     const dl = $('#addr-list');
     if (dl) dl.innerHTML = rows.map(x =>
-      `<option value="${x.email}">${x.name ? x.name + '（' + x.source + '）' : x.source}</option>`).join('');
+      `<option value="${esc(x.email)}">${esc(x.name ? x.name + '（' + x.source + '）' : x.source)}</option>`).join('');
     const box = $('#addr-chips');
     if (box) box.innerHTML = rows.slice(0, 6).map(x =>
-      `<button type="button" class="addr-chip" data-m="${x.email}"
+      `<button type="button" class="addr-chip" data-m="${esc(x.email)}"
          style="border:1px solid #d5d5d8;background:#fff;border-radius:12px;padding:2px 9px;margin:2px 4px 2px 0;cursor:pointer;font-size:11px">
-         ${x.name || x.email}</button>`).join('')
+         ${esc(x.name || x.email)}</button>`).join('')
       + (rows.length ? '' : '<span style="color:#888">まだ宛先の控えがありません</span>');
     if (box) box.querySelectorAll('.addr-chip').forEach(b => {
       b.onclick = () => { $('#mail-to').value = b.dataset.m; };
@@ -2033,7 +2033,7 @@ renderPreview();
 
   const ISSUE = [['eom','月末'],['5','毎月5日'],['10','毎月10日'],['15','毎月15日'],['20','毎月20日'],['25','毎月25日']];
   const DUE = [['eom','当月末'],['nm10','翌月10日'],['nm25','翌月25日'],['eonm','翌月末'],['+30','発行から30日']];
-  const esc2 = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+  const esc2 = v => String(v ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
   function nextIssue(c){
     const now = new Date();
